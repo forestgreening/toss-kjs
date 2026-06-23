@@ -1,0 +1,10 @@
+# OMC runtime/session state (transient, not project content)
+.omc/state/
+.omc/logs/
+.omc/notepad.md
+.omc/project-memory.json
+.omc/research/
+
+# OS / editor
+Thumbs.db
+.DS_Store
