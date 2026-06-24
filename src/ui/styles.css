@@ -28,6 +28,8 @@ body {
 .tag { font-size: 12px; background: var(--blue-weak); color: var(--blue); border-radius: 6px; padding: 2px 7px; font-weight: 600; }
 .list-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 4px; border-bottom: 1px solid var(--line); cursor: pointer; }
 .list-item:last-child { border-bottom: 0; }
+/* 카드 자체가 하나의 행일 때(메뉴/목록 카드): 카드 패딩 유지 + 내부 구분선 제거 */
+.card.list-item { padding: 16px; border-bottom: 0; }
 button.primary { width: 100%; padding: 15px; border: 0; border-radius: 14px; background: var(--blue); color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; }
 button.primary:disabled { background: #c4d4ee; }
 button.ghost { padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: #fff; font-size: 15px; cursor: pointer; }
