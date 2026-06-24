@@ -35,7 +35,6 @@ export function QuickEntry({ nav, back, eventId }: { nav: Nav; back: () => void;
   const [phone, setPhone] = useState('');
   const [note, setNote] = useState('');
   const [occasion, setOccasion] = useState(''); // '' = 없음
-  const [customMode, setCustomMode] = useState(false);
   const [pending, setPending] = useState<{ candidates: Person[]; input: NewEntryInput } | null>(null);
   const [savedCount, setSavedCount] = useState(0);
 
@@ -143,34 +142,19 @@ export function QuickEntry({ nav, back, eventId }: { nav: Nav; back: () => void;
         {!lockedToEvent && (
           <div className="card">
             <label className="lbl" style={{ marginTop: 0 }}>경조사 (선택)</label>
-            <div className="chips">
+            <input
+              className="field"
+              placeholder="예) 결혼식, 외삼촌 환갑"
+              value={occasion}
+              onChange={(e) => setOccasion(e.target.value)}
+            />
+            <div className="chips" style={{ marginTop: 8 }}>
               {OCCASIONS.map((o) => (
-                <button
-                  key={o}
-                  className="chip"
-                  style={occasion === o && !customMode ? sel : {}}
-                  onClick={() => { setOccasion(o); setCustomMode(false); }}
-                >
+                <button key={o} className="chip" style={occasion === o ? sel : {}} onClick={() => setOccasion(o)}>
                   {o}
                 </button>
               ))}
-              <button
-                className="chip"
-                style={customMode ? sel : {}}
-                onClick={() => { setCustomMode(true); setOccasion(''); }}
-              >
-                직접 입력
-              </button>
             </div>
-            {customMode && (
-              <input
-                className="field"
-                placeholder="예: 외삼촌 환갑, 개업식"
-                value={occasion}
-                onChange={(e) => setOccasion(e.target.value)}
-                autoFocus
-              />
-            )}
           </div>
         )}
 
