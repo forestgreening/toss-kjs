@@ -24,7 +24,7 @@
 
 1. **로컬 퍼스트** — 제3자 금액·연락처는 기기 로컬(IndexedDB)에만. 서버엔 userKey/익명 카운터만. (개인정보보호법 회피의 핵심)
 2. **수동 입력이 코어** — 3초 내 1건 입력 UX가 생명. 연락처는 편의 기능이며 권한 없어도 100% 동작해야 함.
-3. **백업 필수** — 로컬 영속이 비보장이므로 JSON export/import를 MVP 안전망으로.
+3. **백업 필수 (E2E 암호화 클라우드 — 결정 A)** — 로컬 영속 비보장 → 단말에서 패스프레이즈로 암호화 후 서버엔 **암호문만**(운영자 복호화 불가). 기기변경 복원 + 개인정보 동시 해결. 수동 JSON export/import 보조.
 4. **부고는 금액 UI 분리 + 절대 과금 금지.**
 
 ## 5. 하지 말 것 (분석으로 배제된 것들 — 다시 제안하지 말 것)
@@ -52,6 +52,7 @@
 
 - 앱인토스 WebView: React + `@apps-in-toss/web-framework` + `granite.config.ts`(필수) → `npm run build` 번들 → **콘솔 업로드** (순수 Vite 아님)
 - 로컬 저장: IndexedDB(Dexie). 데이터 모델: `Person` / `Event` / `Record` (상세는 계획서 §4)
+- E2E 백업: `domain/crypto.ts`(PBKDF2-SHA256 + AES-256-GCM, **구현·테스트 완료**) + `data/cloud-backup.ts` + 최소 `server/`(userKey별 암호문 blob). 패스프레이즈는 서버 미전송, 분실 시 복구 불가.
 - 비즈니스 로직(domain/data)을 플랫폼 어댑터와 분리 — 만일의 RN 전환 비용 격리.
 
 ## 9. Git 신원 주의

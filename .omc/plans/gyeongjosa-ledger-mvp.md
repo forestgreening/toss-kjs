@@ -30,6 +30,7 @@
 | R10 | 토스 로그인(appLogin/userKey) — 식별·백업 인가 키. **서버측 authorizationCode→토큰 교환으로 검증된 userKey만 신뢰** | 인증 + Architect 권고6 |
 | R11 | 부고/조의 금액 UI 분리 + 절대 과금 금지 표식 | 윤리·심사 |
 | R12 | **수동 데이터 export/import(JSON)** — 로컬 영속 비보장 대응 안전망 | Architect 권고4 (MVP 필수) |
+| R13 | **E2E 암호화 클라우드 백업/복원** — 단말에서 패스프레이즈로 암호화 후 서버엔 암호문만 저장. 기기변경·앱삭제에도 새 기기에서 복원. 운영자도 복호화 불가(PIPA·영속성 동시 해결) | 사용자 결정 A (MVP 승격) |
 
 ### 1.2 Out of Scope (명시적 비범위)
 - 청첩장/부고장 만들기·디자인·전파·공유 링크 (레드오션 + 정보통신망법 스팸 리스크)
@@ -37,7 +38,8 @@
 - **송금 딥링크(openURL) 호출** — 토스 커뮤니티 공식 답변상 openURL 송금 딥링크 불허·사용자간 송금 미제공. 자동송금 기록 일체 비범위(MVP source=MANUAL 단일) (Architect 권고7 + Critic)
 - 자체 SMS/알림톡 대량 발송 (Phase 0 심사 확인 전까지 금지)
 - 서버에 제3자 평문 금액·연락처 저장
-- 가족 합산·클라우드 백업·프리미엄 구독 결제 (수익화 훅만 남김, 미구현)
+- 가족 합산·프리미엄 구독 결제 (수익화 훅만 남김, 미구현) — ※ 클라우드 백업은 결정 A로 In Scope(R13)로 이동
+- **비암호화(평문) 서버 백업** — E2E 암호화만 허용. 서버가 읽을 수 있는 형태의 백업 금지
 - 커머스(답례품/화환/상품권)·제휴 송객 실제 연동 (자리표시 placeholder만)
 - 다국어, 다크모드 외 부가 테마
 
@@ -64,6 +66,8 @@
 | AC11 | **전체 데이터 JSON export → 앱 wipe → import 시 100% 복원**: 사람/이벤트/기록/병합그래프가 원본과 동일. import는 **원본 id 보존**(재생성 금지), personId FK·mergedFrom을 원본 id로 재연결. export 메타(생성시각/userKey/스키마버전) 포함. 스키마버전은 "버전 필드 존재 + 미래 알 수 없는 버전은 명확한 에러로 거부". import는 **wipe-and-restore 전용**(기존 데이터 있으면 경고 후 전체 교체; merge-on-import는 비범위). 측정: 병합된 Person ≥1 포함 DB로 export→clear→import 후 머지그래프 동일 단위/E2E 테스트. |
 | AC12 | UI 카피에 "정산/송금" 단어 미사용, "기록/장부/주고받은 내역"만 사용. openURL 송금 딥링크 호출 코드 0건. 측정: 카피 grep + 코드 grep 0건. |
 | AC13 | 사용자 주도 **삭제/초기화**: (a) 개별 사람/기록 사용자 삭제 = 집계·net에서 즉시 제외(완전 erasure), (b) "전체 데이터 초기화"로 로컬 DB 전부 삭제. 측정: 삭제 후 집계 반영 + 초기화 후 빈 상태 E2E 테스트. (내부 merge-tombstone(soft)과는 구분 — 아래 4절) |
+| AC14 | **E2E 백업 기밀성**: 클라우드 백업 시 단말에서 암호화 후 전송되며, 서버 전송 페이로드(봉투)에 제3자 평문(이름/전화/금액/이벤트명)이 **0건**. 패스프레이즈는 서버로 전송되지 않음. 측정: 봉투 직렬화 grep 0건 단위 테스트(✅ 구현·통과) + 네트워크 캡처. |
+| AC15 | **기기변경 복원**: 새 기기에서 로그인(userKey) + 패스프레이즈 입력 시 이전 데이터 **100% 복원**(id·FK·mergedFrom 보존). 틀린 패스프레이즈는 복원 실패(명확한 에러), 분실 시 복구 불가 경고 노출. 측정: 암복호 왕복 단위 테스트(✅ 구현·통과) + 다기기 복원 E2E. |
 
 ---
 
@@ -94,7 +98,8 @@ toss-kjs/
 │  │  ├─ phone.ts                  # E.164 정규화
 │  │  ├─ merge.ts                  # soft merge 로직
 │  │  ├─ stats.ts                  # 이벤트/사람 통계 계산
-│  │  └─ hint.ts                   # 적정 금액 힌트 규칙
+│  │  ├─ hint.ts                   # 적정 금액 힌트 규칙
+│  │  └─ crypto.ts                 # ★ E2E 백업 암호화(PBKDF2-SHA256 + AES-256-GCM) — R13/AC14/AC15 (구현·테스트 완료)
 │  ├─ data/
 │  │  ├─ db.ts                     # IndexedDB(Dexie) 스키마 + 스키마버전 필드(마이그레이션 비범위)
 │  │  ├─ repositories/
@@ -103,13 +108,14 @@ toss-kjs/
 │  │  │  └─ recordRepo.ts
 │  │  ├─ export.ts                 # ★ JSON export (메타: 생성시각/userKey/스키마버전) — AC11
 │  │  ├─ import.ts                 # ★ JSON import (원본 id 보존·FK/mergedFrom 재연결·미래버전 거부·wipe-and-restore 전용) — AC11
-│  │  └─ backup.ts                 # (훅만) 향후 서버 동기화/E2E 암호화 인터페이스
+│  │  └─ cloud-backup.ts           # ★ E2E 클라우드 백업/복원 클라이언트(암호문 봉투 업/다운로드) — R13/AC15
+│  ├─ server/                      # ★ 최소 백엔드: userKey별 암호문 blob PUT/GET (authorizationCode→토큰 검증, 평문 PII 미수신)
 │  ├─ features/
 │  │  ├─ quick-entry/              # 3초 입력 (코어)
 │  │  ├─ events/                   # 이벤트 목록/생성/상세 (집계 화면; 카피 "내역/장부")
 │  │  ├─ ledger/                   # 평생 장부(사람 중심)
 │  │  ├─ person/                   # 사람 상세 + 힌트
-│  │  ├─ backup/                   # ★ export/import 화면 + 유실 경고 + PII 경고/암호화 옵션
+│  │  ├─ backup/                   # ★ export/import + E2E 클라우드 백업/복원 화면(패스프레이즈·복구불가 경고) — R13/AC14/AC15
 │  │  ├─ settings/                 # ★ 사람/기록 삭제 + 전체 초기화(사용자 erasure, AC13)
 │  │  └─ monetization/             # placeholder 카드(커머스/제휴 훅)
 │  ├─ ui/                          # 디자인 시스템(버튼/키패드/시트)
@@ -158,7 +164,7 @@ toss-kjs/
 
 | 조건 | 결정 |
 |---|---|
-| ②가 "로컬 영속 전혀 불가" **그리고** 자체 서버 없이 export 백업도 신뢰 불가(③ anonymousKey도 미안정) | ⛔ **ABORT(미니앱)** → "독립 앱(자체 백엔드 동반) 재검토" 분기. 앱인토스 미니앱으로는 평생 장부 부적합 결론. |
+| ②가 "로컬 영속 전혀 불가" **그리고** R13 E2E 클라우드 백업조차 불가(미니앱에서 인증된 외부 API 호출/네트워크 제약) | ⛔ **ABORT(미니앱)** → "독립 앱(자체 백엔드 동반) 재검토" 분기. 앱인토스 미니앱으로는 평생 장부 부적합 결론. ※ 결정 A로 자체 백엔드(E2E 클라우드 백업)를 MVP에 포함하므로, 로컬 영속이 세션 한정이어도 데이터는 클라우드에 보존됨 → 로컬은 UX용 캐시로 격하, 데이터 유실 위험은 R13로 해소(매 실행 복원 UX 부담만 남음). |
 | ②영속 불가 + ① 연락처 미지원 + S0.2 심사 제약(가계부 카테고리 거절 등)이 **동시** 충족 | ⛔ **ABORT** → 독립앱/타 플랫폼 재검토. |
 | 위 ABORT 조건 미충족(영속이 세션 한정이라도 export로 보완 가능) | ✅ **PROCEED** (단 AC6 강등 반영하여 Phase 1 진행) |
 
@@ -168,8 +174,9 @@ toss-kjs/
 - **S1.3** `data/db.ts` IndexedDB(Dexie) 스키마(**버전 필드 포함**) + repositories CRUD. **연속입력 안전성**: 빠른 다건 저장은 단건당 별도 Dexie 트랜잭션으로 직렬 처리(write 순서 보장), UI는 낙관적 반영 + 실패 시 롤백. 자동완성/검색 입력만 디바운스(저장은 디바운스 금지).
 - **S1.4** `stats.ts`(AC4) + `hint.ts`(AC5, 공식: "가장 최근 RECEIVED 단일 금액") 계산 로직.
 - **S1.5** `data/export.ts` + `data/import.ts` (AC11): import는 **원본 id 보존**(재생성 금지), personId FK·mergedFrom을 원본 id로 재연결하여 머지그래프 보존. export 메타(생성시각/userKey/스키마버전). 스키마버전 정책 = "버전 필드 존재 + 미래 알 수 없는 버전은 명확한 에러로 거부"(v1→v2 마이그레이션은 비범위). import = **wipe-and-restore 전용**(기존 데이터 있으면 경고 후 전체 교체).
+- **S1.6** `domain/crypto.ts` E2E 백업 암호화(PBKDF2-SHA256 210k + AES-256-GCM): `encryptDataset`/`decryptDataset`/봉투 포맷 — R13/AC14/AC15. **✅ 구현·테스트 완료**.
 - 산출물: 위 파일 + `tests/unit/*`.
-- **수용**: AC3/AC3b/AC4/AC5/AC6/AC11 단위 테스트 green. AC11 테스트는 **병합된 Person ≥1 포함 DB의 export→clear→import 후 머지그래프 동일** 케이스 필수 포함.
+- **수용**: AC3/AC3b/AC4/AC5/AC6/AC11/AC14/AC15 단위 테스트 green. AC11 테스트는 **병합된 Person ≥1 포함 DB의 export→clear→import 후 머지그래프 동일** 케이스 필수 포함. (현재 6개 모듈 31/31 green)
 
 ### Phase 2 — 3초 입력 + 핵심 화면 (MVP 본체)
 - **S2.1** `ui/` 디자인 시스템 최소셋: NumberPad, BottomSheet, AmountInput, PersonChip.
@@ -180,8 +187,9 @@ toss-kjs/
 - **S2.6** `features/backup`: export/import 화면 + 유실 경고 배너(AC11). **export PII 경고**: export JSON은 제3자 평문 PII(이름·전화·금액)를 기기 밖으로 내보냄 → 명시적 경고 + 선택적 패스프레이즈 암호화 옵션(AC7 정신 보호). 카피 가드(AC12).
 - **S2.7** `features/settings`(삭제/거버넌스): 개별 사람·기록 삭제, 전체 데이터 초기화(AC13). 사용자 erasure는 export본 안내 포함.
 - **S2.8** `features/monetization`: 답례품/화환 placeholder 카드(클릭 시 "준비 중", 부고엔 미노출).
-- 산출물: 위 feature 디렉토리.
-- **수용**: AC1a/AC2/AC3b/AC7/AC8/AC9/AC10/AC11/AC12/AC13 통과.
+- **S2.9** **E2E 클라우드 백업(R13/AC14/AC15)**: `data/cloud-backup.ts`(암호문 봉투 업/다운로드) + 최소 백엔드(`server/`: 인증된 userKey별 암호문 blob PUT/GET, authorizationCode→토큰 교환 검증, 평문 PII 미수신). 패스프레이즈 설정 + **복구 불가 경고** UX, 새 기기 복원 플로우.
+- 산출물: 위 feature 디렉토리 + `server/`.
+- **수용**: AC1a/AC2/AC3b/AC7/AC8/AC9/AC10/AC11/AC12/AC13/AC14/AC15 통과.
 
 ### Phase 3 — 검증·측정 (가설 테스트)
 - **S3.1** 인앱 경량 이벤트 로깅(로컬 카운터: 입력완료수, 입력소요시간, 이벤트정산 사용여부).
@@ -244,8 +252,8 @@ toss-kjs/
 ### 로컬 저장 방식 (영속 비보장 — 안전망 필수)
 - **IndexedDB(Dexie)** 메인 스토어(스키마 버전 포함). 모든 제3자 금액·연락처는 로컬 only.
 - ⚠️ **영속성 비보장**: 토스 FAQ — "앱 삭제 시 Storage 데이터도 삭제", "기기변경 후 유지하려면 자체 서버 연동". WebView IndexedDB도 보수적으로 비보장 간주. 사진 미저장(용량 한도 미확인)·텍스트 중심.
-- **안전망(MVP 필수)**: `data/export.ts`/`import.ts` 수동 JSON 백업/복원(AC11). 향후 서버 동기화로 확장.
-- 서버 전송 데이터는 익명 카운터/검증된 userKey뿐(AC7). `data/backup.ts`는 향후 서버 동기화/E2E 암호화 인터페이스만 정의(미구현 훅).
+- **안전망(MVP 필수, 2단)**: (1) `data/export.ts`/`import.ts` 수동 JSON 백업/복원(AC11), (2) **E2E 암호화 클라우드 백업**(R13) — `domain/crypto.ts`로 단말에서 암호화 후 **암호문만** 서버 저장, 새 기기에서 패스프레이즈로 복원(AC15). 이로써 기기변경·앱삭제에도 데이터 보존.
+- 서버 전송 데이터는 익명 카운터/검증된 userKey + **암호문 봉투(평문 PII 0건, AC14)**뿐. 패스프레이즈는 서버로 전송하지 않음 → 운영자도 복호화 불가(E2E). 분실 시 복구 불가(UX 경고 필수).
 
 ### 백업 인가 모델 (Architect 권고6)
 - 백업 스코프 키 = **userKey**. 단, 클라이언트가 전달하는 userKey를 직접 신뢰하지 않고 **서버측 authorizationCode→토큰 교환으로 검증된 userKey만 신뢰**.
@@ -283,7 +291,7 @@ toss-kjs/
 | 리스크 | 영향 | 완화책 |
 |--------|------|--------|
 | **fetchContacts가 WebView 미지원/RN 전용 가능성** | 연락처 편의 상실 | WebView **미지원으로 기본 가정**(기본 꺼짐). 연락처 의존 기능은 "RN 필요" 플래그로 로드맵 분리. 코어 100% 수동입력 유지(AC2). Phase0 PoC ①에서 실측. |
-| **로컬 저장 영속 비보장**(앱삭제/기기변경 시 유실 — 토스 FAQ 명시) | 평생 장부 신뢰성 치명 | **export/import를 MVP 필수**로 승격(AC11) + 유실 경고 배너 + 향후 서버 동기화(`backup.ts` 인터페이스). Phase0 PoC ②에서 한도·영속성 실측. |
+| **로컬 저장 영속 비보장**(앱삭제/기기변경 시 유실 — 토스 FAQ 명시) | 평생 장부 신뢰성 치명 | **E2E 암호화 클라우드 백업(R13, MVP)** 으로 기기변경·앱삭제에도 복원 + 운영자 복호화 불가(AC14/AC15). + 수동 export/import(AC11) 보조 + 유실 경고 배너. Phase0 PoC ②에서 로컬 한도·영속성 실측(로컬은 UX용 캐시, 진실원본은 클라우드 백업). |
 | WebView IndexedDB 용량 한도 미확인 | 대량 데이터 저장 실패 | 사진 미저장·텍스트 중심 정책. PoC ②에서 한도 실측 후 상한 가드. |
 | **저빈도 리텐션**(경조사는 드묾) | 재방문↓ | (a) 평생 장부의 "조회 가치"로 식 없을 때도 열게(다른 사람 경조사 갈 때 힌트), (b) 결혼철(봄·가을) 집중. 리텐션 대신 "내역 입력 완료율(=사용성 지표)"을 1차로. |
 | 송금 자동화 기대 불일치 + 딥링크 불허 | CS·심사 거절 | "자동" 단어 금지. 송금 딥링크(openURL) Out of Scope·코드 0건(AC12). source=MANUAL 단일(자동송금 잔재 제거). |
