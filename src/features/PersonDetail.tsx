@@ -58,7 +58,7 @@ export function PersonDetail({ back, id }: { back: () => void; id: string }) {
             <label className="lbl">전화번호</label>
             <input className="field" inputMode="tel" placeholder="010-0000-0000" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} />
             <label className="lbl">메모</label>
-            <input className="field" placeholder="누구인지 단서 (예: 엄마의 작은할머니)" value={editNote} onChange={(e) => setEditNote(e.target.value)} />
+            <input className="field" placeholder="예) 엄마의 작은할머니" value={editNote} onChange={(e) => setEditNote(e.target.value)} />
             <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
               <button className="ghost" style={{ flex: 1 }} onClick={() => setMode('view')}>취소</button>
               <button className="primary" style={{ flex: 1 }} onClick={saveEdit}>저장</button>
