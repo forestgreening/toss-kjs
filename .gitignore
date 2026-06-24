@@ -5,6 +5,11 @@
 .omc/project-memory.json
 .omc/research/
 
+# Node
+node_modules/
+dist/
+*.log
+
 # OS / editor
 Thumbs.db
 .DS_Store
