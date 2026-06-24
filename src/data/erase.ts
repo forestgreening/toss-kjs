@@ -3,6 +3,7 @@ import { db } from './db';
 import { personRepo } from './repositories/personRepo';
 import { eventRepo } from './repositories/eventRepo';
 import { recordRepo } from './repositories/recordRepo';
+import { forgetSeed } from './seed';
 
 /** 기록 1건 완전 삭제 → 집계·net에서 즉시 제외. */
 export async function deleteRecord(id: string): Promise<void> {
@@ -23,4 +24,5 @@ export async function wipeAll(): Promise<void> {
   await db.transaction('rw', db.persons, db.events, db.records, async () => {
     await Promise.all([personRepo.clear(), eventRepo.clear(), recordRepo.clear()]);
   });
+  forgetSeed();
 }

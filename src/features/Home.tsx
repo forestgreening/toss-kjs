@@ -2,7 +2,7 @@ import type { Nav } from '../app/App';
 import { useLedger } from '../app/store';
 import { TopBar } from '../ui/TopBar';
 import { formatKRW, formatValue, formatDate } from '../ui/format';
-import { seedSample } from '../data/seed';
+import { seedSample, isSeedActive, clearSeed } from '../data/seed';
 import type { Direction, LedgerRecord } from '../domain/models';
 
 function sum(records: LedgerRecord[], dir: Direction): number {
@@ -15,6 +15,10 @@ export function Home({ nav }: { nav: Nav }) {
   const { events, records, personMap, reload } = useLedger();
   const onSeed = async () => {
     await seedSample(Date.now());
+    await reload();
+  };
+  const onClearSeed = async () => {
+    await clearSeed();
     await reload();
   };
   const recv = sum(records, 'RECEIVED');
@@ -38,6 +42,14 @@ export function Home({ nav }: { nav: Nav }) {
       />
       <div className="content" style={{ paddingBottom: 90 }}>
         <div className="muted" style={{ margin: '-2px 4px 12px' }}>경조사 주고받기 · 마음을 기록해요</div>
+        {isSeedActive() && (
+          <div className="card" style={{ background: '#fff8e1', border: '1px solid #ffe1b3' }}>
+            <div className="row">
+              <span>📌 예시 데이터를 둘러보는 중이에요</span>
+              <button className="ghost" onClick={onClearSeed}>예시 지우기</button>
+            </div>
+          </div>
+        )}
         <div className="card">
           <div className="muted">그동안 주고받은 마음</div>
           <div className={'big ' + (net >= 0 ? 'net-pos' : 'net-neg')}>{formatKRW(net)}</div>
