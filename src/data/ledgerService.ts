@@ -62,6 +62,23 @@ export async function confirmMergeAndSave(personId: string, input: NewEntryInput
   return saveRecordFor(personId, input);
 }
 
+/** SUGGEST 후 사용자가 "다른 사람"으로 확정했을 때: 동명이라도 새 Person 생성. */
+export async function saveAsNewPerson(input: NewEntryInput): Promise<AddEntryResult> {
+  const personId = input.newId();
+  await personRepo.put({
+    id: personId,
+    displayName: input.name,
+    phoneE164: normalizePhone(input.phoneRaw),
+    phoneRaw: input.phoneRaw ?? null,
+    status: 'MANUAL',
+    mergedFrom: [],
+    note: null,
+    createdAt: input.now,
+    updatedAt: input.now,
+  });
+  return saveRecordFor(personId, input);
+}
+
 async function saveRecordFor(personId: string, input: NewEntryInput): Promise<AddEntryResult> {
   const recordId = input.newId();
   const record: LedgerRecord = {

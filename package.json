@@ -3,18 +3,27 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "description": "경조사 주고받기 장부 — 도메인 코어 (Phase 1)",
+  "description": "경조사 주고받기 장부 (앱인토스 미니앱)",
   "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^4.7.0",
     "fake-indexeddb": "^6.2.5",
     "typescript": "^5.6.3",
+    "vite": "^5.4.21",
     "vitest": "^2.1.8"
   },
   "dependencies": {
-    "dexie": "^4.4.4"
+    "dexie": "^4.4.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   }
 }
