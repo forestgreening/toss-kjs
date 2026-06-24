@@ -39,7 +39,7 @@ export function PersonDetail({ back, id }: { back: () => void; id: string }) {
     setMode('view');
   }
   async function doMerge(otherId: string, otherName: string) {
-    if (!confirm(`'${otherName}'님을 '${person!.displayName}'님과 같은 사람으로 합칠까요?\n'${otherName}'의 기록이 모두 옮겨지고 '${otherName}'은 사라져요.`)) return;
+    if (!confirm(`'${otherName}'님을 '${person!.displayName}'님과 합칠까요?\n'${otherName}'의 기록이 모두 옮겨지고 '${otherName}'은 사라져요.\n(부부로 묶었다면 합친 뒤 이름을 '○○·○○'로 바꿀 수 있어요)`)) return;
     await mergePeople(id, otherId, Date.now());
     await reload();
     setMode('view');
@@ -64,9 +64,9 @@ export function PersonDetail({ back, id }: { back: () => void; id: string }) {
 
             {others.length > 0 && (
               <div className="card">
-                <b>같은 분이 따로 있나요?</b>
+                <b>한 사람으로 합치기</b>
                 <div className="muted" style={{ margin: '4px 0 10px' }}>
-                  개명·번호 변경으로 같은 분이 둘로 나뉘었으면 합쳐서 정리해요.
+                  개명·번호 변경으로 갈렸거나, 두 분이 부부가 되어 한 집으로 묶고 싶을 때 합쳐요.
                 </div>
                 <input
                   className="field"
@@ -151,7 +151,7 @@ export function PersonDetail({ back, id }: { back: () => void; id: string }) {
               })}
             </div>
 
-            <button className="ghost" style={{ width: '100%' }} onClick={startEdit}>이름·번호 수정</button>
+            <button className="ghost" style={{ width: '100%' }} onClick={startEdit}>이름·번호 수정 · 합치기</button>
             <button
               className="ghost"
               style={{ width: '100%', color: 'var(--red)', borderColor: '#f7c5c9', marginTop: 8 }}
