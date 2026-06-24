@@ -51,9 +51,9 @@ export function PersonDetail({ back, id }: { back: () => void; id: string }) {
       <div className="content">
         {mode === 'edit' && (
           <div className="card">
-            <label className="lbl" style={{ marginTop: 0 }}>이름 (개명했으면 수정하세요)</label>
+            <label className="lbl" style={{ marginTop: 0 }}>이름</label>
             <input className="field" value={editName} onChange={(e) => setEditName(e.target.value)} />
-            <label className="lbl">전화번호 (바뀌었으면 수정하세요)</label>
+            <label className="lbl">전화번호</label>
             <input className="field" inputMode="tel" placeholder="010-0000-0000" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} />
             <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
               <button className="ghost" style={{ flex: 1 }} onClick={() => setMode('view')}>취소</button>
