@@ -10,6 +10,9 @@ node_modules/
 dist/
 *.log
 
+# 디자인 소스(목업 zip 등) — 저장소에 미포함
+*.zip
+
 # OS / editor
 Thumbs.db
 .DS_Store

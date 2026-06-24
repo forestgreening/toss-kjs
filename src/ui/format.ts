@@ -41,6 +41,8 @@ export function formatDate(epoch: number): string {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
 }
 
+import type { EventType } from '../domain/models';
+
 export const EVENT_LABEL: Record<string, string> = {
   WEDDING: '결혼',
   FUNERAL: '장례',
@@ -49,3 +51,30 @@ export const EVENT_LABEL: Record<string, string> = {
   BIRTHDAY: '생일',
   OTHER: '기타',
 };
+
+export const EVENT_EMOJI: Record<string, string> = {
+  WEDDING: '💍',
+  FUNERAL: '🕊️',
+  DOL: '🎂',
+  HOUSEWARMING: '🏠',
+  BIRTHDAY: '🎉',
+  OTHER: '📌',
+};
+
+/** 내 경조사 기본 제목(장례는 "내 장례"가 어색하므로 "가족 장례"). */
+export function defaultEventTitle(type: EventType): string {
+  switch (type) {
+    case 'WEDDING':
+      return '내 결혼식';
+    case 'FUNERAL':
+      return '가족 장례';
+    case 'DOL':
+      return '아이 돌잔치';
+    case 'HOUSEWARMING':
+      return '집들이';
+    case 'BIRTHDAY':
+      return '생일';
+    default:
+      return '경조사';
+  }
+}

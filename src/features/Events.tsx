@@ -4,10 +4,10 @@ import { useLedger } from '../app/store';
 import { TopBar } from '../ui/TopBar';
 import { eventRepo } from '../data/repositories/eventRepo';
 import { newId } from '../lib/id';
-import { EVENT_LABEL, formatDate, toDateInputValue, fromDateInputValue } from '../ui/format';
+import { EVENT_LABEL, EVENT_EMOJI, defaultEventTitle, formatDate, toDateInputValue, fromDateInputValue } from '../ui/format';
 import type { EventType, EventRec } from '../domain/models';
 
-const TYPES: EventType[] = ['WEDDING', 'FUNERAL', 'DOL', 'HOUSEWARMING', 'BIRTHDAY', 'OTHER'];
+const TYPES: EventType[] = ['WEDDING', 'FUNERAL', 'DOL', 'HOUSEWARMING', 'BIRTHDAY'];
 
 export function Events({ nav, back, home }: { nav: Nav; back: () => void; home: () => void }) {
   const { events, reload } = useLedger();
@@ -23,7 +23,7 @@ export function Events({ nav, back, home }: { nav: Nav; back: () => void; home: 
     const ev: EventRec = {
       id: newId(),
       type,
-      title: title.trim() || `내 ${EVENT_LABEL[type]}`,
+      title: title.trim() || defaultEventTitle(type),
       ownerSide: 'MINE',
       date: fromDateInputValue(dateStr, t),
       createdAt: t,
@@ -56,16 +56,17 @@ export function Events({ nav, back, home }: { nav: Nav; back: () => void; home: 
         )}
 
         {events.map((e) => (
-          <div key={e.id} className="card list-item" style={{ marginBottom: 8 }} onClick={() => nav({ name: 'event', id: e.id })}>
-            <div>
-              <b>{e.title}</b>
-              <div className="muted">
+          <button key={e.id} className="menu-card" onClick={() => nav({ name: 'event', id: e.id })}>
+            <div className="icon-tile" style={{ fontSize: 20 }}>{EVENT_EMOJI[e.type] ?? '📌'}</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 15.5, fontWeight: 700 }}>{e.title}</div>
+              <div className="muted" style={{ fontSize: 12.5, marginTop: 2 }}>
                 {EVENT_LABEL[e.type]}
                 {e.ownerSide === 'OTHERS' ? ' · 남의 경조사' : ''} · {formatDate(e.date)}
               </div>
             </div>
-            <span className="muted">›</span>
-          </div>
+            <svg className="chev" width="8" height="14" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6" stroke="#c4cbd4" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          </button>
         ))}
 
         {creating && (
@@ -79,7 +80,7 @@ export function Events({ nav, back, home }: { nav: Nav; back: () => void; home: 
               ))}
             </div>
             <label className="lbl">제목 (선택)</label>
-            <input className="field" placeholder={`예: 내 ${EVENT_LABEL[type]}`} value={title} onChange={(e) => setTitle(e.target.value)} />
+            <input className="field" placeholder={`예: ${defaultEventTitle(type)}`} value={title} onChange={(e) => setTitle(e.target.value)} />
             <label className="lbl">날짜</label>
             <input className="field" type="date" value={dateStr} onChange={(e) => setDateStr(e.target.value)} />
             <button className="primary" style={{ marginTop: 14 }} onClick={create}>만들기</button>

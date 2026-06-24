@@ -53,10 +53,13 @@ export function EventDetail({ nav, back, home, id }: { nav: Nav; back: () => voi
 
         {isMine && stats.top.length > 0 && (
           <div className="card">
-            <b>마음 많이 전해주신 분</b>
+            <b style={{ display: 'block', padding: '4px 0' }}>마음 많이 전해주신 분</b>
             {stats.top.map((t, i) => (
               <div key={t.personId} className="list-item">
-                <span>{i + 1}. {t.name}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span className="rank">{i + 1}</span>
+                  <span style={{ fontWeight: 600 }}>{t.name}</span>
+                </div>
                 <b>{formatKRW(t.sum)}</b>
               </div>
             ))}
