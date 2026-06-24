@@ -104,8 +104,8 @@ export function QuickEntry({ nav, back, eventId }: { nav: Nav; back: () => void;
       <TopBar title={fixedEvent ? fixedEvent.title : '기록 추가'} onBack={back} />
       <div className="content" style={{ paddingBottom: 96 }}>
         <div className="seg">
-          <button className={direction === 'RECEIVED' ? 'on' : ''} onClick={() => setDirection('RECEIVED')}>받음</button>
-          <button className={direction === 'GIVEN' ? 'on' : ''} onClick={() => setDirection('GIVEN')}>줌</button>
+          <button className={direction === 'GIVEN' ? 'on' : ''} onClick={() => setDirection('GIVEN')}>보냈어요</button>
+          <button className={direction === 'RECEIVED' ? 'on' : ''} onClick={() => setDirection('RECEIVED')}>받았어요</button>
         </div>
 
         <div className="card" style={{ marginTop: 12 }}>

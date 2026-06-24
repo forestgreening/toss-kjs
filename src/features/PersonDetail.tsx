@@ -40,7 +40,7 @@ export function PersonDetail({ back, id }: { back: () => void; id: string }) {
             <div key={r.id} className="list-item">
               <div>
                 <span className="tag" style={r.direction === 'RECEIVED' ? {} : { background: '#eef0f2', color: '#5b636b' }}>
-                  {r.direction === 'RECEIVED' ? '받음' : '줌'}
+                  {r.direction === 'RECEIVED' ? '받음' : '보냄'}
                 </span>
                 <span className="muted" style={{ marginLeft: 8 }}>{formatDate(r.date)}</span>
                 {(() => {
