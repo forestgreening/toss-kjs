@@ -20,7 +20,7 @@ export function Home({ nav }: { nav: Nav }) {
   return (
     <>
       <TopBar
-        title="경조사 장부"
+        title="마음장부"
         right={
           <button className="back" style={{ fontSize: 20 }} aria-label="설정" onClick={() => nav({ name: 'settings' })}>
             ⚙
@@ -28,6 +28,7 @@ export function Home({ nav }: { nav: Nav }) {
         }
       />
       <div className="content" style={{ paddingBottom: 90 }}>
+        <div className="muted" style={{ margin: '-2px 4px 12px' }}>경조사 주고받기 · 마음을 기록해요</div>
         <div className="card">
           <div className="muted">평생 주고받은 순액</div>
           <div className={'big ' + (net >= 0 ? 'net-pos' : 'net-neg')}>{formatKRW(net)}</div>

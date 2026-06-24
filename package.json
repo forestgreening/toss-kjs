@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "description": "경조사 주고받기 장부 (앱인토스 미니앱)",
+  "description": "마음장부 — 경조사 주고받은 내역 기록·정리 (앱인토스 미니앱)",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
