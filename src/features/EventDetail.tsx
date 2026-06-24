@@ -2,10 +2,12 @@ import type { Nav } from '../app/App';
 import { useLedger } from '../app/store';
 import { TopBar } from '../ui/TopBar';
 import { eventStats } from '../domain/stats';
+import { deleteRecord } from '../data/erase';
+import { MonetizationCard } from './MonetizationCard';
 import { formatKRW, EVENT_LABEL } from '../ui/format';
 
 export function EventDetail({ nav, back, id }: { nav: Nav; back: () => void; id: string }) {
-  const { events, records, personMap } = useLedger();
+  const { events, records, personMap, reload } = useLedger();
   const ev = events.find((e) => e.id === id);
   if (!ev) return <div className="center">경조사를 찾을 수 없어요</div>;
 
@@ -50,13 +52,32 @@ export function EventDetail({ nav, back, id }: { nav: Nav; back: () => void; id:
               .slice()
               .sort((a, b) => b.date - a.date)
               .map((r) => (
-                <div key={r.id} className="list-item" onClick={() => nav({ name: 'person', id: r.personId })}>
-                  <span>{personMap.get(r.personId)?.displayName ?? '(이름 없음)'}</span>
-                  <b>{r.amount != null ? formatKRW(r.amount) : (r.giftName ?? '선물')}</b>
+                <div key={r.id} className="list-item">
+                  <span style={{ flex: 1, cursor: 'pointer' }} onClick={() => nav({ name: 'person', id: r.personId })}>
+                    {personMap.get(r.personId)?.displayName ?? '(이름 없음)'}
+                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <b>{r.amount != null ? formatKRW(r.amount) : (r.giftName ?? '선물')}</b>
+                    <button
+                      className="back"
+                      style={{ color: 'var(--gray)', fontSize: 16 }}
+                      aria-label="기록 삭제"
+                      onClick={async () => {
+                        if (confirm('이 기록을 삭제할까요?')) {
+                          await deleteRecord(r.id);
+                          await reload();
+                        }
+                      }}
+                    >
+                      ✕
+                    </button>
+                  </div>
                 </div>
               ))
           )}
         </div>
+
+        {!isFuneral && <MonetizationCard />}
       </div>
 
       <button className="primary fab" onClick={() => nav({ name: 'quick', eventId: id })}>+ 기록 추가</button>

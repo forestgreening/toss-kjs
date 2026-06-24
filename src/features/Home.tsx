@@ -33,7 +33,7 @@ export function Home({ nav }: { nav: Nav }) {
         <div className="card" style={{ display: 'flex', gap: 8 }}>
           <button className="ghost" style={{ flex: 1 }} onClick={() => nav({ name: 'events' })}>경조사</button>
           <button className="ghost" style={{ flex: 1 }} onClick={() => nav({ name: 'ledger' })}>평생 장부</button>
-          <button className="ghost" style={{ flex: 1 }} onClick={() => nav({ name: 'backup' })}>백업</button>
+          <button className="ghost" style={{ flex: 1 }} onClick={() => nav({ name: 'settings' })}>설정</button>
         </div>
 
         <div className="card">

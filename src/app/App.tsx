@@ -7,6 +7,7 @@ import { EventDetail } from '../features/EventDetail';
 import { Ledger } from '../features/Ledger';
 import { PersonDetail } from '../features/PersonDetail';
 import { Backup } from '../features/Backup';
+import { Settings } from '../features/Settings';
 
 export type Screen =
   | { name: 'home' }
@@ -15,7 +16,8 @@ export type Screen =
   | { name: 'event'; id: string }
   | { name: 'ledger' }
   | { name: 'person'; id: string }
-  | { name: 'backup' };
+  | { name: 'backup' }
+  | { name: 'settings' };
 
 export type Nav = (s: Screen) => void;
 
@@ -45,5 +47,7 @@ function render(screen: Screen, nav: Nav, back: () => void) {
       return <PersonDetail back={back} id={screen.id} />;
     case 'backup':
       return <Backup back={back} />;
+    case 'settings':
+      return <Settings nav={nav} back={back} />;
   }
 }

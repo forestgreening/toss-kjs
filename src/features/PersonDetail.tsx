@@ -2,10 +2,11 @@ import { useLedger } from '../app/store';
 import { TopBar } from '../ui/TopBar';
 import { personLedger } from '../domain/stats';
 import { suggestAmount } from '../domain/hint';
+import { deletePerson, deleteRecord } from '../data/erase';
 import { formatKRW, formatDate } from '../ui/format';
 
 export function PersonDetail({ back, id }: { back: () => void; id: string }) {
-  const { persons, records } = useLedger();
+  const { persons, records, reload } = useLedger();
   const person = persons.find((p) => p.id === id);
   if (!person) return <div className="center">사람을 찾을 수 없어요</div>;
 
@@ -43,10 +44,39 @@ export function PersonDetail({ back, id }: { back: () => void; id: string }) {
                 </span>
                 <span className="muted" style={{ marginLeft: 8 }}>{formatDate(r.date)}</span>
               </div>
-              <b>{r.amount != null ? formatKRW(r.amount) : (r.giftName ?? '선물')}</b>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <b>{r.amount != null ? formatKRW(r.amount) : (r.giftName ?? '선물')}</b>
+                <button
+                  className="back"
+                  style={{ color: 'var(--gray)', fontSize: 16 }}
+                  aria-label="기록 삭제"
+                  onClick={async () => {
+                    if (confirm('이 기록을 삭제할까요?')) {
+                      await deleteRecord(r.id);
+                      await reload();
+                    }
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
             </div>
           ))}
         </div>
+
+        <button
+          className="ghost"
+          style={{ width: '100%', color: 'var(--red)', borderColor: '#f7c5c9' }}
+          onClick={async () => {
+            if (confirm(`${person.displayName} 님과 모든 기록을 삭제할까요?`)) {
+              await deletePerson(id);
+              await reload();
+              back();
+            }
+          }}
+        >
+          이 사람 삭제
+        </button>
       </div>
     </>
   );
