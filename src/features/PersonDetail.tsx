@@ -66,8 +66,8 @@ export function PersonDetail({ back, id }: { back: () => void; id: string }) {
           <div className="card">
             <b>다른 사람과 합치기</b>
             <div className="muted" style={{ margin: '4px 0 10px' }}>
-              '{person.displayName}'님의 내역을 고른 사람과 합쳐 한 사람으로 정리해요.
-              개명·번호 변경으로 갈렸거나, 두 분이 부부가 되어 한 집으로 묶을 때 써요.
+              고른 사람을 '{person.displayName}'님과 한 사람으로 합쳐요.
+              <br />예) 개명·번호 변경, 부부를 한 집으로
             </div>
             <input
               className="field"
