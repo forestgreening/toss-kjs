@@ -12,8 +12,11 @@ export function Ledger({ nav, back }: { nav: Nav; back: () => void }) {
 
   return (
     <>
-      <TopBar title="평생 장부" onBack={back} />
+      <TopBar title="사람별 장부" onBack={back} />
       <div className="content">
+        <div className="muted" style={{ margin: '0 4px 12px' }}>
+          그동안 주고받은 사람들이에요. 다음 경조사 때 얼마 낼지 가늠이 돼요.
+        </div>
         {rows.length === 0 ? (
           <div className="center">아직 사람 기록이 없어요</div>
         ) : (

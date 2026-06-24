@@ -19,7 +19,14 @@ export function Home({ nav }: { nav: Nav }) {
 
   return (
     <>
-      <TopBar title="경조사 장부" />
+      <TopBar
+        title="경조사 장부"
+        right={
+          <button className="back" style={{ fontSize: 20 }} aria-label="설정" onClick={() => nav({ name: 'settings' })}>
+            ⚙
+          </button>
+        }
+      />
       <div className="content" style={{ paddingBottom: 90 }}>
         <div className="card">
           <div className="muted">평생 주고받은 순액</div>
@@ -30,10 +37,19 @@ export function Home({ nav }: { nav: Nav }) {
           </div>
         </div>
 
-        <div className="card" style={{ display: 'flex', gap: 8 }}>
-          <button className="ghost" style={{ flex: 1 }} onClick={() => nav({ name: 'events' })}>경조사</button>
-          <button className="ghost" style={{ flex: 1 }} onClick={() => nav({ name: 'ledger' })}>평생 장부</button>
-          <button className="ghost" style={{ flex: 1 }} onClick={() => nav({ name: 'settings' })}>설정</button>
+        <div className="card list-item" onClick={() => nav({ name: 'events' })}>
+          <div>
+            <b>📥 내 경조사</b>
+            <div className="muted">내가 받은 축의·조의를 정산해요</div>
+          </div>
+          <span className="muted">›</span>
+        </div>
+        <div className="card list-item" onClick={() => nav({ name: 'ledger' })}>
+          <div>
+            <b>👥 사람별 장부</b>
+            <div className="muted">누구와 얼마 주고받았는지 한눈에</div>
+          </div>
+          <span className="muted">›</span>
         </div>
 
         <div className="card">

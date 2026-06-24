@@ -1,4 +1,6 @@
-export function TopBar({ title, onBack }: { title: string; onBack?: () => void }) {
+import type { ReactNode } from 'react';
+
+export function TopBar({ title, onBack, right }: { title: string; onBack?: () => void; right?: ReactNode }) {
   return (
     <div className="topbar">
       {onBack && (
@@ -7,6 +9,7 @@ export function TopBar({ title, onBack }: { title: string; onBack?: () => void }
         </button>
       )}
       <h1>{title}</h1>
+      {right && <div style={{ marginLeft: 'auto' }}>{right}</div>}
     </div>
   );
 }
