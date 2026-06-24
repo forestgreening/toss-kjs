@@ -46,7 +46,7 @@ export function EventDetail({ nav, back, id }: { nav: Nav; back: () => void; id:
 
         {isMine && stats.top.length > 0 && (
           <div className="card">
-            <b>가장 많이 주신 분</b>
+            <b>마음 많이 전해주신 분</b>
             {stats.top.map((t, i) => (
               <div key={t.personId} className="list-item">
                 <span>{i + 1}. {t.name}</span>
