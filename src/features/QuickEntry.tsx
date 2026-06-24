@@ -98,9 +98,9 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
     await afterSave();
   }
 
-  async function resolveSame() {
+  async function resolveWith(personId: string) {
     if (!pending) return;
-    await confirmMergeAndSave(pending.candidates[0]!.id, pending.input);
+    await confirmMergeAndSave(personId, pending.input);
     setPending(null);
     await afterSave();
   }
@@ -214,14 +214,20 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
 
       {pending && (
         <div className="card" style={{ position: 'fixed', left: '50%', transform: 'translateX(-50%)', bottom: 16, width: 'calc(100% - 32px)', maxWidth: 448, zIndex: 20, boxShadow: '0 8px 24px rgba(0,0,0,.14)' }}>
-          <b>같은 사람인가요?</b>
-          <div className="muted" style={{ margin: '6px 0 12px' }}>
-            "{pending.input.name}" 이름의 기록이 이미 있어요. (전화번호가 없어 자동 판단 불가)
+          <b>이미 있는 분인가요?</b>
+          <div className="muted" style={{ margin: '6px 0 10px' }}>
+            "{pending.input.name}" 이름의 기록이 있어요. 같은 분이면 고르고, 아니면 새로 추가하세요.
           </div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button className="ghost" style={{ flex: 1 }} onClick={resolveNew}>다른 사람</button>
-            <button className="primary" style={{ flex: 1 }} onClick={resolveSame}>같은 사람</button>
-          </div>
+          {pending.candidates.map((c) => (
+            <div key={c.id} className="list-item" onClick={() => resolveWith(c.id)}>
+              <div>
+                <b>{c.displayName}</b>
+                {c.note && <div className="muted">📝 {c.note}</div>}
+              </div>
+              <span className="muted">이 분이에요 ›</span>
+            </div>
+          ))}
+          <button className="ghost" style={{ width: '100%', marginTop: 10 }} onClick={resolveNew}>다른 사람으로 추가</button>
         </div>
       )}
 
