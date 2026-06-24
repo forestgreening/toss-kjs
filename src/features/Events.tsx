@@ -4,7 +4,7 @@ import { useLedger } from '../app/store';
 import { TopBar } from '../ui/TopBar';
 import { eventRepo } from '../data/repositories/eventRepo';
 import { newId } from '../lib/id';
-import { EVENT_LABEL, formatDate } from '../ui/format';
+import { EVENT_LABEL, formatDate, toDateInputValue, fromDateInputValue } from '../ui/format';
 import type { EventType, EventRec } from '../domain/models';
 
 const TYPES: EventType[] = ['WEDDING', 'FUNERAL', 'DOL', 'HOUSEWARMING', 'BIRTHDAY', 'OTHER'];
@@ -14,6 +14,7 @@ export function Events({ nav, back, home }: { nav: Nav; back: () => void; home: 
   const [creating, setCreating] = useState(false);
   const [type, setType] = useState<EventType>('WEDDING');
   const [title, setTitle] = useState('');
+  const [dateStr, setDateStr] = useState(toDateInputValue(Date.now()));
 
   // 경조사(이벤트)는 "내 경조사" 정산 전용 — 여러 명에게서 받은 내역을 모은다.
   // 남에게 낸 건 홈에서 한 줄로 기록(별도 이벤트 불필요).
@@ -24,7 +25,7 @@ export function Events({ nav, back, home }: { nav: Nav; back: () => void; home: 
       type,
       title: title.trim() || `내 ${EVENT_LABEL[type]}`,
       ownerSide: 'MINE',
-      date: t,
+      date: fromDateInputValue(dateStr, t),
       createdAt: t,
       updatedAt: t,
     };
@@ -46,7 +47,13 @@ export function Events({ nav, back, home }: { nav: Nav; back: () => void; home: 
           </div>
         )}
 
-        {events.length === 0 && !creating && <div className="center">아직 내 경조사가 없어요</div>}
+        {events.length === 0 && !creating && (
+          <div className="center" style={{ padding: '32px 0' }}>
+            <div style={{ fontSize: 36, marginBottom: 8 }}>📥</div>
+            <div style={{ fontWeight: 700, color: 'var(--ink)' }}>아직 내 경조사가 없어요</div>
+            <div className="muted">아래 버튼으로 내 결혼·돌 등을 추가하세요</div>
+          </div>
+        )}
 
         {events.map((e) => (
           <div key={e.id} className="card list-item" style={{ marginBottom: 8 }} onClick={() => nav({ name: 'event', id: e.id })}>
@@ -73,6 +80,8 @@ export function Events({ nav, back, home }: { nav: Nav; back: () => void; home: 
             </div>
             <label className="lbl">제목 (선택)</label>
             <input className="field" placeholder={`예: 내 ${EVENT_LABEL[type]}`} value={title} onChange={(e) => setTitle(e.target.value)} />
+            <label className="lbl">날짜</label>
+            <input className="field" type="date" value={dateStr} onChange={(e) => setDateStr(e.target.value)} />
             <button className="primary" style={{ marginTop: 14 }} onClick={create}>만들기</button>
           </div>
         )}

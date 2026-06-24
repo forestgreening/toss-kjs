@@ -20,8 +20,17 @@ export function Settings({ nav, back, home }: { nav: Nav; back: () => void; home
       <TopBar title="설정" onBack={back} onHome={home} />
       <div className="content">
         <div className="card">
-          <div className="muted">저장된 데이터</div>
-          <div>경조사 {events.length} · 사람 {persons.length} · 기록 {records.length}</div>
+          <div className="muted" style={{ marginBottom: 8 }}>저장된 데이터</div>
+          <div style={{ display: 'flex', gap: 24 }}>
+            {([['경조사', events.length], ['사람', persons.length], ['기록', records.length]] as const).map(
+              ([label, val]) => (
+                <div key={label}>
+                  <div style={{ fontSize: 22, fontWeight: 800 }}>{val}</div>
+                  <div className="muted" style={{ fontSize: 12 }}>{label}</div>
+                </div>
+              ),
+            )}
+          </div>
         </div>
 
         <div className="card list-item" onClick={() => nav({ name: 'backup' })}>

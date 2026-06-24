@@ -16,7 +16,14 @@ export function PersonDetail({ back, home, id }: { back: () => void; home: () =>
   const [editNote, setEditNote] = useState('');
   const [mergeQuery, setMergeQuery] = useState('');
 
-  if (!person) return <div className="center">사람을 찾을 수 없어요</div>;
+  if (!person) {
+    return (
+      <>
+        <TopBar title="사람" onBack={back} onHome={home} />
+        <div className="center">사람을 찾을 수 없어요</div>
+      </>
+    );
+  }
 
   const l = personLedger(records, id);
   const hint = suggestAmount(records, id);
@@ -50,7 +57,7 @@ export function PersonDetail({ back, home, id }: { back: () => void; home: () =>
   return (
     <>
       <TopBar title={person.displayName} onBack={back} onHome={home} />
-      <div className="content">
+      <div className="content" style={{ paddingBottom: 32 }}>
         {mode === 'edit' && (
           <div className="card">
             <label className="lbl" style={{ marginTop: 0 }}>이름</label>
@@ -131,7 +138,7 @@ export function PersonDetail({ back, home, id }: { back: () => void; home: () =>
                 return (
                   <div key={r.id} className="list-item">
                     <div>
-                      <span className="tag" style={r.direction === 'RECEIVED' ? {} : { background: '#eef0f2', color: '#5b636b' }}>
+                      <span className={`tag ${r.direction === 'RECEIVED' ? 'tag-recv' : 'tag-give'}`}>
                         {r.direction === 'RECEIVED' ? '받음' : '보냄'}
                       </span>
                       <span className="muted" style={{ marginLeft: 8 }}>{formatDate(r.date)}</span>

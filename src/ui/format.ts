@@ -18,6 +18,24 @@ export function formatValue(amount: number | null | undefined, giftName: string 
   return formatKRW(amount);
 }
 
+/** epoch → <input type="date"> 값(yyyy-mm-dd, 로컬) */
+export function toDateInputValue(epoch: number): string {
+  const d = new Date(epoch);
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${m}-${day}`;
+}
+
+/** <input type="date"> 값 → epoch(로컬 자정). 빈/이상값이면 now. */
+export function fromDateInputValue(s: string, now: number): number {
+  const parts = s.split('-').map(Number);
+  const y = parts[0];
+  const m = parts[1];
+  const d = parts[2];
+  if (!y || !m || !d) return now;
+  return new Date(y, m - 1, d).getTime();
+}
+
 export function formatDate(epoch: number): string {
   const d = new Date(epoch);
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;

@@ -14,24 +14,30 @@ export function Backup({ back, home }: { back: () => void; home: () => void }) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `gyeongjosa-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `maeumjangbu-backup-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
     setMsg('백업 파일을 저장했어요.');
   }
 
   async function onImport(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0];
+    const input = e.target;
+    const f = input.files?.[0];
     if (!f) return;
     try {
       const parsed = JSON.parse(await f.text());
       const dataset = importData(parsed);
-      if (records.length > 0 && !confirm('현재 데이터를 모두 지우고 백업으로 덮어씁니다. 계속할까요?')) return;
+      if (records.length > 0 && !confirm('현재 데이터를 모두 지우고 백업으로 바꿔요. 계속할까요?')) {
+        input.value = '';
+        return;
+      }
       await replaceAll(dataset);
       await reload();
       setMsg('복원 완료.');
-    } catch (err) {
-      setMsg('복원 실패: ' + String(err));
+    } catch {
+      setMsg('백업 파일을 읽지 못했어요. 올바른 파일인지 확인해 주세요.');
+    } finally {
+      input.value = ''; // 같은 파일 재선택 가능하도록 리셋
     }
   }
 
@@ -50,9 +56,12 @@ export function Backup({ back, home }: { back: () => void; home: () => void }) {
         <div className="card">
           <b>가져오기 (덮어쓰기)</b>
           <p className="muted" style={{ margin: '6px 0 12px' }}>
-            백업 파일을 선택하면 현재 데이터를 전부 교체합니다(wipe-and-restore).
+            백업 파일을 선택하면 현재 데이터를 전부 교체해요.
           </p>
-          <input type="file" accept="application/json" onChange={onImport} />
+          <label className="primary" style={{ display: 'block', textAlign: 'center', cursor: 'pointer' }}>
+            백업 파일 불러오기
+            <input type="file" accept="application/json" onChange={onImport} style={{ display: 'none' }} />
+          </label>
         </div>
 
         {msg && <div className="card" style={{ color: 'var(--blue)' }}>{msg}</div>}

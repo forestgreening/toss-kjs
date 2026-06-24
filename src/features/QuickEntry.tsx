@@ -10,7 +10,7 @@ import {
 } from '../data/ledgerService';
 import { pickContact, contactsSupported } from '../platform/contacts';
 import { newId } from '../lib/id';
-import { formatMan } from '../ui/format';
+import { formatMan, formatKRW, toDateInputValue, fromDateInputValue } from '../ui/format';
 import type { Direction, Person, OwnerSide } from '../domain/models';
 
 const CHIPS = [50000, 100000, 200000, 300000, 500000];
@@ -37,6 +37,8 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
   const [phone, setPhone] = useState('');
   const [note, setNote] = useState('');
   const [occasion, setOccasion] = useState(''); // '' = 없음
+  const [dateStr, setDateStr] = useState(toDateInputValue(Date.now()));
+  const [toast, setToast] = useState('');
   const [pending, setPending] = useState<{ candidates: Person[]; input: NewEntryInput } | null>(null);
   const [savedCount, setSavedCount] = useState(0);
 
@@ -68,13 +70,15 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
       eventId: eventId ?? null,
       occasion: occasion.trim() || null,
       note: note.trim() || null,
-      date: t,
+      date: fromDateInputValue(dateStr, t),
       now: t,
       newId,
     };
   }
 
   async function afterSave() {
+    const valueStr = entryType === 'gift' ? giftName.trim() || '선물' : formatKRW(amountNum);
+    setToast(`✓ ${name.trim()} · ${direction === 'RECEIVED' ? '받음' : '보냄'} ${valueStr} 기록했어요`);
     await reload();
     setSavedCount((c) => c + 1);
     setAmount('');
@@ -114,6 +118,9 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
         <div className="seg">
           <button className={direction === 'GIVEN' ? 'on' : ''} onClick={() => setDirection('GIVEN')}>보냈어요</button>
           <button className={direction === 'RECEIVED' ? 'on' : ''} onClick={() => setDirection('RECEIVED')}>받았어요</button>
+        </div>
+        <div className="muted" style={{ margin: '6px 4px 0' }}>
+          {direction === 'GIVEN' ? '내가 낸 마음을 적어요' : '내가 받은 마음을 적어요'}
         </div>
 
         <div className="card" style={{ marginTop: 12 }}>
@@ -170,6 +177,8 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
           <input className="field" inputMode="tel" placeholder="010-0000-0000" value={phone} onChange={(e) => setPhone(e.target.value)} />
           <label className="lbl">메모 (선택)</label>
           <input className="field" placeholder="예) 엄마의 작은할머니" value={note} onChange={(e) => setNote(e.target.value)} />
+          <label className="lbl">날짜</label>
+          <input className="field" type="date" value={dateStr} onChange={(e) => setDateStr(e.target.value)} />
         </div>
 
         {!lockedToEvent && (
@@ -191,6 +200,11 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
           </div>
         )}
 
+        {toast && (
+          <div className="muted" role="status" aria-live="polite" style={{ textAlign: 'center', color: 'var(--green)' }}>
+            {toast}
+          </div>
+        )}
         {savedCount > 0 && (
           <div className="muted" style={{ textAlign: 'center' }}>
             {savedCount}건 저장됨 — 이어서 입력하거나 완료하세요
@@ -199,7 +213,7 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
       </div>
 
       {pending && (
-        <div className="card" style={{ position: 'fixed', left: 16, right: 16, bottom: 16, maxWidth: 448, margin: '0 auto' }}>
+        <div className="card" style={{ position: 'fixed', left: '50%', transform: 'translateX(-50%)', bottom: 16, width: 'calc(100% - 32px)', maxWidth: 448, zIndex: 20, boxShadow: '0 8px 24px rgba(0,0,0,.14)' }}>
           <b>같은 사람인가요?</b>
           <div className="muted" style={{ margin: '6px 0 12px' }}>
             "{pending.input.name}" 이름의 기록이 이미 있어요. (전화번호가 없어 자동 판단 불가)
@@ -211,10 +225,12 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
         </div>
       )}
 
-      <div className="fab" style={{ display: 'flex', gap: 8 }}>
-        {savedCount > 0 && <button className="ghost" style={{ flex: 1, background: '#fff' }} onClick={back}>완료</button>}
-        <button className="primary" style={{ flex: 2 }} disabled={!canSave} onClick={onSave}>저장</button>
-      </div>
+      {!pending && (
+        <div className="fab" style={{ display: 'flex', gap: 8 }}>
+          {savedCount > 0 && <button className="ghost" style={{ flex: 1, background: '#fff' }} onClick={back}>완료</button>}
+          <button className="primary" style={{ flex: 2 }} disabled={!canSave} onClick={onSave}>저장</button>
+        </div>
+      )}
     </>
   );
 }

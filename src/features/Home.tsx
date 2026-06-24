@@ -89,7 +89,7 @@ export function Home({ nav }: { nav: Nav }) {
                   <div>
                     <b>{personMap.get(r.personId)?.displayName ?? '(이름 없음)'}</b>
                     <div className="muted">
-                      <span className="tag" style={r.direction === 'RECEIVED' ? {} : { background: '#eef0f2', color: '#5b636b' }}>
+                      <span className={`tag ${r.direction === 'RECEIVED' ? 'tag-recv' : 'tag-give'}`}>
                         {r.direction === 'RECEIVED' ? '받음' : '보냄'}
                       </span>
                       {occ ? ` · ${occ}` : ''} · {formatDate(r.date)}

@@ -9,7 +9,14 @@ import { formatKRW, formatValue, EVENT_LABEL } from '../ui/format';
 export function EventDetail({ nav, back, home, id }: { nav: Nav; back: () => void; home: () => void; id: string }) {
   const { events, records, personMap, reload } = useLedger();
   const ev = events.find((e) => e.id === id);
-  if (!ev) return <div className="center">경조사를 찾을 수 없어요</div>;
+  if (!ev) {
+    return (
+      <>
+        <TopBar title="경조사" onBack={back} onHome={home} />
+        <div className="center">경조사를 찾을 수 없어요</div>
+      </>
+    );
+  }
 
   const isFuneral = ev.type === 'FUNERAL';
   const isMine = ev.ownerSide === 'MINE';
