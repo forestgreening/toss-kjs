@@ -84,7 +84,7 @@ export function PersonDetail({ back, id }: { back: () => void; id: string }) {
         {mode === 'view' && (
           <>
             <div className="card">
-              <div className="muted">주고받은 금액</div>
+              <div className="muted">주고받은 마음</div>
               <div className={'big ' + (l.net >= 0 ? 'net-pos' : 'net-neg')}>{formatKRW(l.net)}</div>
               <div className="row" style={{ marginTop: 8 }}>
                 <span className="muted">받은 마음 {formatKRW(l.receivedSum)}</span>
