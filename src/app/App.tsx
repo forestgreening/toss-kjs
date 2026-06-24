@@ -26,28 +26,29 @@ export function App() {
   const screen = stack[stack.length - 1]!;
   const nav: Nav = (s) => setStack((st) => [...st, s]);
   const back = () => setStack((st) => (st.length > 1 ? st.slice(0, -1) : st));
+  const home = () => setStack([{ name: 'home' }]);
   const { ready } = useLedger();
 
-  return <div className="app">{ready ? render(screen, nav, back) : <div className="center">불러오는 중…</div>}</div>;
+  return <div className="app">{ready ? render(screen, nav, back, home) : <div className="center">불러오는 중…</div>}</div>;
 }
 
-function render(screen: Screen, nav: Nav, back: () => void) {
+function render(screen: Screen, nav: Nav, back: () => void, home: () => void) {
   switch (screen.name) {
     case 'home':
       return <Home nav={nav} />;
     case 'quick':
-      return <QuickEntry nav={nav} back={back} eventId={screen.eventId} />;
+      return <QuickEntry nav={nav} back={back} home={home} eventId={screen.eventId} />;
     case 'events':
-      return <Events nav={nav} back={back} />;
+      return <Events nav={nav} back={back} home={home} />;
     case 'event':
-      return <EventDetail nav={nav} back={back} id={screen.id} />;
+      return <EventDetail nav={nav} back={back} home={home} id={screen.id} />;
     case 'ledger':
-      return <Ledger nav={nav} back={back} />;
+      return <Ledger nav={nav} back={back} home={home} />;
     case 'person':
-      return <PersonDetail back={back} id={screen.id} />;
+      return <PersonDetail back={back} home={home} id={screen.id} />;
     case 'backup':
-      return <Backup back={back} />;
+      return <Backup back={back} home={home} />;
     case 'settings':
-      return <Settings nav={nav} back={back} />;
+      return <Settings nav={nav} back={back} home={home} />;
   }
 }

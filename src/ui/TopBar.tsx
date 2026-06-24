@@ -1,6 +1,16 @@
 import type { ReactNode } from 'react';
 
-export function TopBar({ title, onBack, right }: { title: string; onBack?: () => void; right?: ReactNode }) {
+export function TopBar({
+  title,
+  onBack,
+  onHome,
+  right,
+}: {
+  title: string;
+  onBack?: () => void;
+  onHome?: () => void;
+  right?: ReactNode;
+}) {
   return (
     <div className="topbar">
       {onBack && (
@@ -9,7 +19,14 @@ export function TopBar({ title, onBack, right }: { title: string; onBack?: () =>
         </button>
       )}
       <h1>{title}</h1>
-      {right && <div style={{ marginLeft: 'auto' }}>{right}</div>}
+      <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
+        {onHome && (
+          <button className="back" onClick={onHome} aria-label="홈" style={{ fontSize: 19 }}>
+            🏠
+          </button>
+        )}
+        {right}
+      </div>
     </div>
   );
 }

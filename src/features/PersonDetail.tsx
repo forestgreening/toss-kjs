@@ -7,7 +7,7 @@ import { deletePerson, deleteRecord } from '../data/erase';
 import { editPerson, mergePeople } from '../data/personOps';
 import { formatKRW, formatDate } from '../ui/format';
 
-export function PersonDetail({ back, id }: { back: () => void; id: string }) {
+export function PersonDetail({ back, home, id }: { back: () => void; home: () => void; id: string }) {
   const { persons, records, reload, events } = useLedger();
   const person = persons.find((p) => p.id === id);
   const [mode, setMode] = useState<'view' | 'edit' | 'merge'>('view');
@@ -49,7 +49,7 @@ export function PersonDetail({ back, id }: { back: () => void; id: string }) {
 
   return (
     <>
-      <TopBar title={person.displayName} onBack={back} />
+      <TopBar title={person.displayName} onBack={back} onHome={home} />
       <div className="content">
         {mode === 'edit' && (
           <div className="card">

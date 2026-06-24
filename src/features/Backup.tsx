@@ -4,7 +4,7 @@ import { TopBar } from '../ui/TopBar';
 import { exportDataset, replaceAll } from '../data/backupStore';
 import { exportData, importData } from '../domain/backup';
 
-export function Backup({ back }: { back: () => void }) {
+export function Backup({ back, home }: { back: () => void; home: () => void }) {
   const { reload, records } = useLedger();
   const [msg, setMsg] = useState('');
 
@@ -37,7 +37,7 @@ export function Backup({ back }: { back: () => void }) {
 
   return (
     <>
-      <TopBar title="백업 / 복원" onBack={back} />
+      <TopBar title="백업 / 복원" onBack={back} onHome={home} />
       <div className="content">
         <div className="card">
           <b>내보내기 (JSON)</b>

@@ -4,7 +4,7 @@ import { TopBar } from '../ui/TopBar';
 import { personLedger } from '../domain/stats';
 import { formatKRW } from '../ui/format';
 
-export function Ledger({ nav, back }: { nav: Nav; back: () => void }) {
+export function Ledger({ nav, back, home }: { nav: Nav; back: () => void; home: () => void }) {
   const { persons, records } = useLedger();
   const rows = persons
     .map((p) => ({ p, l: personLedger(records, p.id) }))
@@ -12,7 +12,7 @@ export function Ledger({ nav, back }: { nav: Nav; back: () => void }) {
 
   return (
     <>
-      <TopBar title="사람별 장부" onBack={back} />
+      <TopBar title="사람별 장부" onBack={back} onHome={home} />
       <div className="content">
         <div className="muted" style={{ margin: '0 4px 12px' }}>
           그동안 주고받은 사람들이에요. 다음에 얼마나 전하면 좋을지 가늠이 돼요.

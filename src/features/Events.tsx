@@ -9,7 +9,7 @@ import type { EventType, EventRec } from '../domain/models';
 
 const TYPES: EventType[] = ['WEDDING', 'FUNERAL', 'DOL', 'HOUSEWARMING', 'BIRTHDAY', 'OTHER'];
 
-export function Events({ nav, back }: { nav: Nav; back: () => void }) {
+export function Events({ nav, back, home }: { nav: Nav; back: () => void; home: () => void }) {
   const { events, reload } = useLedger();
   const [creating, setCreating] = useState(false);
   const [type, setType] = useState<EventType>('WEDDING');
@@ -37,7 +37,7 @@ export function Events({ nav, back }: { nav: Nav; back: () => void }) {
 
   return (
     <>
-      <TopBar title="내 경조사" onBack={back} />
+      <TopBar title="내 경조사" onBack={back} onHome={home} />
       <div className="content" style={{ paddingBottom: 90 }}>
         {!creating && (
           <div className="muted" style={{ margin: '0 4px 12px' }}>

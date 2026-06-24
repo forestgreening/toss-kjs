@@ -16,7 +16,7 @@ import type { Direction, Person, OwnerSide } from '../domain/models';
 const CHIPS = [50000, 100000, 200000, 300000, 500000];
 const OCCASIONS = ['결혼식', '장례식', '돌잔치', '집들이', '생일'];
 
-export function QuickEntry({ nav, back, eventId }: { nav: Nav; back: () => void; eventId?: string }) {
+export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () => void; home: () => void; eventId?: string }) {
   const { events, reload } = useLedger();
   const fixedEvent = eventId ? events.find((e) => e.id === eventId) : undefined;
   const lockedToEvent = Boolean(eventId);
@@ -103,7 +103,7 @@ export function QuickEntry({ nav, back, eventId }: { nav: Nav; back: () => void;
 
   return (
     <>
-      <TopBar title={fixedEvent ? fixedEvent.title : '기록 추가'} onBack={back} />
+      <TopBar title={fixedEvent ? fixedEvent.title : '기록 추가'} onBack={back} onHome={home} />
       <div className="content" style={{ paddingBottom: 96 }}>
         <div className="seg">
           <button className={direction === 'GIVEN' ? 'on' : ''} onClick={() => setDirection('GIVEN')}>보냈어요</button>

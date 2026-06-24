@@ -4,7 +4,7 @@ import { useLedger } from '../app/store';
 import { TopBar } from '../ui/TopBar';
 import { wipeAll } from '../data/erase';
 
-export function Settings({ nav, back }: { nav: Nav; back: () => void }) {
+export function Settings({ nav, back, home }: { nav: Nav; back: () => void; home: () => void }) {
   const { reload, records, persons, events } = useLedger();
   const [msg, setMsg] = useState('');
 
@@ -17,7 +17,7 @@ export function Settings({ nav, back }: { nav: Nav; back: () => void }) {
 
   return (
     <>
-      <TopBar title="설정" onBack={back} />
+      <TopBar title="설정" onBack={back} onHome={home} />
       <div className="content">
         <div className="card">
           <div className="muted">저장된 데이터</div>

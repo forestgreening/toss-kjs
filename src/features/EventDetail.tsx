@@ -6,7 +6,7 @@ import { deleteRecord } from '../data/erase';
 import { MonetizationCard } from './MonetizationCard';
 import { formatKRW, EVENT_LABEL } from '../ui/format';
 
-export function EventDetail({ nav, back, id }: { nav: Nav; back: () => void; id: string }) {
+export function EventDetail({ nav, back, home, id }: { nav: Nav; back: () => void; home: () => void; id: string }) {
   const { events, records, personMap, reload } = useLedger();
   const ev = events.find((e) => e.id === id);
   if (!ev) return <div className="center">경조사를 찾을 수 없어요</div>;
@@ -20,7 +20,7 @@ export function EventDetail({ nav, back, id }: { nav: Nav; back: () => void; id:
 
   return (
     <div className={isFuneral ? 'funeral' : ''}>
-      <TopBar title={ev.title} onBack={back} />
+      <TopBar title={ev.title} onBack={back} onHome={home} />
       <div className="content" style={{ paddingBottom: 90 }}>
         {!isMine && (
           <div className="card" style={{ background: '#fff8e1', border: '1px solid #ffe1b3' }}>
