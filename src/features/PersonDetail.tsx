@@ -6,7 +6,7 @@ import { deletePerson, deleteRecord } from '../data/erase';
 import { formatKRW, formatDate } from '../ui/format';
 
 export function PersonDetail({ back, id }: { back: () => void; id: string }) {
-  const { persons, records, reload } = useLedger();
+  const { persons, records, reload, events } = useLedger();
   const person = persons.find((p) => p.id === id);
   if (!person) return <div className="center">사람을 찾을 수 없어요</div>;
 
@@ -43,6 +43,10 @@ export function PersonDetail({ back, id }: { back: () => void; id: string }) {
                   {r.direction === 'RECEIVED' ? '받음' : '줌'}
                 </span>
                 <span className="muted" style={{ marginLeft: 8 }}>{formatDate(r.date)}</span>
+                {(() => {
+                  const occ = r.occasion ?? events.find((e) => e.id === r.eventId)?.title ?? null;
+                  return occ ? <span className="muted" style={{ marginLeft: 8 }}>· {occ}</span> : null;
+                })()}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <b>{r.amount != null ? formatKRW(r.amount) : (r.giftName ?? '선물')}</b>

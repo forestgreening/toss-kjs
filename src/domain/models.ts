@@ -53,6 +53,8 @@ export interface LedgerRecord {
   date: number;
   /** TRANSFER_HINT 제거됨 — 송금 자동기록 비범위. 항상 수동. */
   source: 'MANUAL';
+  /** 경조사 태그(라벨). 이벤트(eventId)에 묶이지 않은 단건 기록의 "어떤 경조사였는지". 예: "결혼식" */
+  occasion?: string | null;
   memo?: string | null;
   /** 사용자 erasure(완전 삭제 전 tombstone). 통계/장부에서 제외. */
   deletedAt?: number | null;

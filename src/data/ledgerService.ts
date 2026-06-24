@@ -15,6 +15,8 @@ export interface NewEntryInput {
   amount?: number | null;
   giftName?: string | null;
   eventId?: string | null;
+  /** 경조사 태그(이벤트 비연결 단건용). 예: "결혼식" 또는 직접 입력 */
+  occasion?: string | null;
   date: number;
   now: number;
   /** id 생성기(테스트에서 주입 가능, 실제론 uuid) */
@@ -90,6 +92,7 @@ async function saveRecordFor(personId: string, input: NewEntryInput): Promise<Ad
     giftName: input.giftName ?? null,
     date: input.date,
     source: 'MANUAL',
+    occasion: input.occasion ?? null,
     memo: null,
     deletedAt: null,
     createdAt: input.now,

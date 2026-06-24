@@ -8,14 +8,13 @@ import {
   saveAsNewPerson,
   type NewEntryInput,
 } from '../data/ledgerService';
-import { eventRepo } from '../data/repositories/eventRepo';
 import { pickContact } from '../platform/contacts';
 import { newId } from '../lib/id';
-import { formatMan, EVENT_LABEL } from '../ui/format';
-import type { Direction, Person, EventType, OwnerSide } from '../domain/models';
+import { formatMan } from '../ui/format';
+import type { Direction, Person, OwnerSide } from '../domain/models';
 
 const CHIPS = [50000, 100000, 200000, 300000, 500000];
-const TYPES: EventType[] = ['WEDDING', 'FUNERAL', 'DOL', 'HOUSEWARMING', 'BIRTHDAY', 'OTHER'];
+const OCCASIONS = ['결혼식', '장례식', '돌잔치', '집들이', '생일'];
 
 export function QuickEntry({ nav, back, eventId }: { nav: Nav; back: () => void; eventId?: string }) {
   const { events, reload } = useLedger();
@@ -29,45 +28,16 @@ export function QuickEntry({ nav, back, eventId }: { nav: Nav; back: () => void;
   const [direction, setDirection] = useState<Direction>(
     fixedEvent ? dirFromOwner(fixedEvent.ownerSide) : 'RECEIVED',
   );
-  const [selectedEventId, setSelectedEventId] = useState<string | null>(eventId ?? null);
   const [amount, setAmount] = useState('');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [occasion, setOccasion] = useState(''); // '' = 없음
+  const [customMode, setCustomMode] = useState(false);
   const [pending, setPending] = useState<{ candidates: Person[]; input: NewEntryInput } | null>(null);
   const [savedCount, setSavedCount] = useState(0);
 
-  // "직접" 경조사 추가
-  const [showCustom, setShowCustom] = useState(false);
-  const [customType, setCustomType] = useState<EventType>('WEDDING');
-  const [customTitle, setCustomTitle] = useState('');
-
   const amountNum = amount ? parseInt(amount, 10) : null;
   const canSave = name.trim().length > 0 && amountNum !== null && amountNum > 0;
-
-  function pickEvent(id: string | null) {
-    setSelectedEventId(id);
-    const ev = events.find((e) => e.id === id);
-    if (ev) setDirection(dirFromOwner(ev.ownerSide));
-  }
-
-  async function createCustomEvent() {
-    const t = Date.now();
-    const ownerSide: OwnerSide = direction === 'RECEIVED' ? 'MINE' : 'OTHERS';
-    const id = newId();
-    await eventRepo.put({
-      id,
-      type: customType,
-      title: customTitle.trim() || `${EVENT_LABEL[customType]} (${ownerSide === 'MINE' ? '내 경조사' : '타인'})`,
-      ownerSide,
-      date: t,
-      createdAt: t,
-      updatedAt: t,
-    });
-    await reload();
-    setSelectedEventId(id);
-    setShowCustom(false);
-    setCustomTitle('');
-  }
 
   async function onPickContact() {
     try {
@@ -88,7 +58,8 @@ export function QuickEntry({ nav, back, eventId }: { nav: Nav; back: () => void;
       phoneRaw: phone.trim() || null,
       direction,
       amount: amountNum,
-      eventId: selectedEventId,
+      eventId: eventId ?? null,
+      occasion: occasion.trim() || null,
       date: t,
       now: t,
       newId,
@@ -101,6 +72,7 @@ export function QuickEntry({ nav, back, eventId }: { nav: Nav; back: () => void;
     setAmount('');
     setName('');
     setPhone('');
+    // occasion은 유지(같은 경조사 연속 입력 편의)
   }
 
   async function onSave() {
@@ -124,8 +96,6 @@ export function QuickEntry({ nav, back, eventId }: { nav: Nav; back: () => void;
     setPending(null);
     await afterSave();
   }
-
-  const recentEvents = events.slice(0, 6);
 
   return (
     <>
@@ -167,27 +137,32 @@ export function QuickEntry({ nav, back, eventId }: { nav: Nav; back: () => void;
           <div className="card">
             <label className="lbl" style={{ marginTop: 0 }}>경조사 (선택)</label>
             <div className="chips">
-              <button className="chip" style={selectedEventId === null ? sel : {}} onClick={() => pickEvent(null)}>없음</button>
-              {recentEvents.map((e) => (
-                <button key={e.id} className="chip" style={selectedEventId === e.id ? sel : {}} onClick={() => pickEvent(e.id)}>
-                  {e.title}
+              {OCCASIONS.map((o) => (
+                <button
+                  key={o}
+                  className="chip"
+                  style={occasion === o && !customMode ? sel : {}}
+                  onClick={() => { setOccasion(o); setCustomMode(false); }}
+                >
+                  {o}
                 </button>
               ))}
-              <button className="chip" onClick={() => setShowCustom((s) => !s)}>+ 직접</button>
+              <button
+                className="chip"
+                style={customMode ? sel : {}}
+                onClick={() => { setCustomMode(true); setOccasion(''); }}
+              >
+                직접 입력
+              </button>
             </div>
-
-            {showCustom && (
-              <div style={{ marginTop: 8 }}>
-                <div className="chips">
-                  {TYPES.map((t) => (
-                    <button key={t} className="chip" style={t === customType ? sel : {}} onClick={() => setCustomType(t)}>
-                      {EVENT_LABEL[t]}
-                    </button>
-                  ))}
-                </div>
-                <input className="field" placeholder="제목 (선택, 예: 김철수 결혼식)" value={customTitle} onChange={(e) => setCustomTitle(e.target.value)} />
-                <button className="ghost" style={{ marginTop: 8 }} onClick={createCustomEvent}>이 경조사로 추가</button>
-              </div>
+            {customMode && (
+              <input
+                className="field"
+                placeholder="예: 외삼촌 환갑, 개업식"
+                value={occasion}
+                onChange={(e) => setOccasion(e.target.value)}
+                autoFocus
+              />
             )}
           </div>
         )}
