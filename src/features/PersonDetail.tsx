@@ -10,7 +10,7 @@ import { formatKRW, formatDate } from '../ui/format';
 export function PersonDetail({ back, id }: { back: () => void; id: string }) {
   const { persons, records, reload, events } = useLedger();
   const person = persons.find((p) => p.id === id);
-  const [mode, setMode] = useState<'view' | 'edit'>('view');
+  const [mode, setMode] = useState<'view' | 'edit' | 'merge'>('view');
   const [editName, setEditName] = useState('');
   const [editPhone, setEditPhone] = useState('');
   const [mergeQuery, setMergeQuery] = useState('');
@@ -50,53 +50,53 @@ export function PersonDetail({ back, id }: { back: () => void; id: string }) {
       <TopBar title={person.displayName} onBack={back} />
       <div className="content">
         {mode === 'edit' && (
-          <>
-            <div className="card">
-              <label className="lbl" style={{ marginTop: 0 }}>이름 (개명했으면 수정하세요)</label>
-              <input className="field" value={editName} onChange={(e) => setEditName(e.target.value)} />
-              <label className="lbl">전화번호 (바뀌었으면 수정하세요)</label>
-              <input className="field" inputMode="tel" placeholder="010-0000-0000" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} />
-              <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-                <button className="ghost" style={{ flex: 1 }} onClick={() => setMode('view')}>취소</button>
-                <button className="primary" style={{ flex: 1 }} onClick={saveEdit}>저장</button>
-              </div>
+          <div className="card">
+            <label className="lbl" style={{ marginTop: 0 }}>이름 (개명했으면 수정하세요)</label>
+            <input className="field" value={editName} onChange={(e) => setEditName(e.target.value)} />
+            <label className="lbl">전화번호 (바뀌었으면 수정하세요)</label>
+            <input className="field" inputMode="tel" placeholder="010-0000-0000" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} />
+            <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+              <button className="ghost" style={{ flex: 1 }} onClick={() => setMode('view')}>취소</button>
+              <button className="primary" style={{ flex: 1 }} onClick={saveEdit}>저장</button>
             </div>
+          </div>
+        )}
 
-            {others.length > 0 && (
-              <div className="card">
-                <b>한 사람으로 합치기</b>
-                <div className="muted" style={{ margin: '4px 0 10px' }}>
-                  개명·번호 변경으로 갈렸거나, 두 분이 부부가 되어 한 집으로 묶고 싶을 때 합쳐요.
+        {mode === 'merge' && (
+          <div className="card">
+            <b>다른 사람과 합치기</b>
+            <div className="muted" style={{ margin: '4px 0 10px' }}>
+              '{person.displayName}'님의 내역을 고른 사람과 합쳐 한 사람으로 정리해요.
+              개명·번호 변경으로 갈렸거나, 두 분이 부부가 되어 한 집으로 묶을 때 써요.
+            </div>
+            <input
+              className="field"
+              placeholder="합칠 사람 이름 검색"
+              value={mergeQuery}
+              onChange={(e) => setMergeQuery(e.target.value)}
+            />
+            <div style={{ marginTop: 8 }}>
+              {mergeCandidates.length === 0 ? (
+                <div className="muted" style={{ textAlign: 'center', padding: '12px 0' }}>
+                  {q ? '검색 결과가 없어요' : '이름이 같은 사람이 없어요 · 위에서 검색해 고를 수 있어요'}
                 </div>
-                <input
-                  className="field"
-                  placeholder="합칠 사람 이름 검색"
-                  value={mergeQuery}
-                  onChange={(e) => setMergeQuery(e.target.value)}
-                />
-                <div style={{ marginTop: 8 }}>
-                  {mergeCandidates.length === 0 ? (
-                    <div className="muted" style={{ textAlign: 'center', padding: '12px 0' }}>
-                      {q ? '검색 결과가 없어요' : '이름이 같은 사람이 없어요 · 위에서 검색해 고를 수 있어요'}
+              ) : (
+                mergeCandidates.map((p) => {
+                  const ol = personLedger(records, p.id);
+                  return (
+                    <div key={p.id} className="list-item" onClick={() => doMerge(p.id, p.displayName)}>
+                      <div>
+                        <b>{p.displayName}</b>
+                        <div className="muted">받은 마음 {formatKRW(ol.receivedSum)} · 보낸 마음 {formatKRW(ol.givenSum)}</div>
+                      </div>
+                      <span className="muted">합치기 ›</span>
                     </div>
-                  ) : (
-                    mergeCandidates.map((p) => {
-                      const ol = personLedger(records, p.id);
-                      return (
-                        <div key={p.id} className="list-item" onClick={() => doMerge(p.id, p.displayName)}>
-                          <div>
-                            <b>{p.displayName}</b>
-                            <div className="muted">받은 마음 {formatKRW(ol.receivedSum)} · 보낸 마음 {formatKRW(ol.givenSum)}</div>
-                          </div>
-                          <span className="muted">합치기 ›</span>
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
-              </div>
-            )}
-          </>
+                  );
+                })
+              )}
+            </div>
+            <button className="ghost" style={{ width: '100%', marginTop: 10 }} onClick={() => setMode('view')}>취소</button>
+          </div>
         )}
 
         {mode === 'view' && (
@@ -151,7 +151,8 @@ export function PersonDetail({ back, id }: { back: () => void; id: string }) {
               })}
             </div>
 
-            <button className="ghost" style={{ width: '100%' }} onClick={startEdit}>이름·번호 수정 · 합치기</button>
+            <button className="ghost" style={{ width: '100%' }} onClick={startEdit}>이름·번호 수정</button>
+            <button className="ghost" style={{ width: '100%', marginTop: 8 }} onClick={() => { setMergeQuery(''); setMode('merge'); }}>다른 사람과 합치기</button>
             <button
               className="ghost"
               style={{ width: '100%', color: 'var(--red)', borderColor: '#f7c5c9', marginTop: 8 }}
