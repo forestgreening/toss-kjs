@@ -58,7 +58,9 @@ export function Home({ nav }: { nav: Nav }) {
             <span className="tag" style={{ cursor: 'pointer' }} onClick={() => nav({ name: 'events' })}>전체</span>
           </div>
           {recent.length === 0 ? (
-            <div className="center">아직 기록이 없어요</div>
+            <div className="center" style={{ cursor: 'pointer' }} onClick={() => nav({ name: 'events' })}>
+              아직 내 경조사가 없어요 · 추가하기 ›
+            </div>
           ) : (
             recent.map((e) => (
               <div key={e.id} className="list-item" onClick={() => nav({ name: 'event', id: e.id })}>

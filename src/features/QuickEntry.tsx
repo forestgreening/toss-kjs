@@ -25,8 +25,10 @@ export function QuickEntry({ nav, back, eventId }: { nav: Nav; back: () => void;
     return side === 'MINE' ? 'RECEIVED' : 'GIVEN';
   }
 
+  // 이벤트(내 경조사) 안에서면 받음, 홈에서 단건이면 "줌"이 기본
+  // (받은 금액은 내 경조사에서 처리하므로, 단건 기록은 보통 내가 낸 것)
   const [direction, setDirection] = useState<Direction>(
-    fixedEvent ? dirFromOwner(fixedEvent.ownerSide) : 'RECEIVED',
+    fixedEvent ? dirFromOwner(fixedEvent.ownerSide) : 'GIVEN',
   );
   const [amount, setAmount] = useState('');
   const [name, setName] = useState('');
