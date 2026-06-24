@@ -34,11 +34,11 @@ export function Home({ nav }: { nav: Nav }) {
       <div className="content" style={{ paddingBottom: 90 }}>
         <div className="muted" style={{ margin: '-2px 4px 12px' }}>경조사 주고받기 · 마음을 기록해요</div>
         <div className="card">
-          <div className="muted">평생 주고받은 순액</div>
+          <div className="muted">그동안 주고받은 차이</div>
           <div className={'big ' + (net >= 0 ? 'net-pos' : 'net-neg')}>{formatKRW(net)}</div>
           <div className="row" style={{ marginTop: 8 }}>
-            <span className="muted">받음 {formatKRW(recv)}</span>
-            <span className="muted">줌 {formatKRW(give)}</span>
+            <span className="muted">받은 마음 {formatKRW(recv)}</span>
+            <span className="muted">보낸 마음 {formatKRW(give)}</span>
           </div>
         </div>
 

@@ -36,7 +36,7 @@ export function Settings({ nav, back }: { nav: Nav; back: () => void }) {
         </div>
 
         {msg && <div className="card" style={{ color: 'var(--blue)' }}>{msg}</div>}
-        <div className="muted" style={{ textAlign: 'center' }}>실제 돈 이동 없음 · 수동 기록 전용</div>
+        <div className="muted" style={{ textAlign: 'center' }}>실제 송금은 없어요 · 직접 기록하는 장부예요</div>
       </div>
     </>
   );

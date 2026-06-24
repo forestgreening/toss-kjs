@@ -42,7 +42,7 @@ export function Backup({ back }: { back: () => void }) {
         <div className="card">
           <b>내보내기 (JSON)</b>
           <p className="muted" style={{ margin: '6px 0 12px' }}>
-            ⚠️ 백업 파일에는 이름·전화번호·금액이 그대로 담깁니다. 안전한 곳에 보관하세요.
+            ⚠️ 백업 파일에는 이름·연락처·주고받은 내역이 담겨요. 안전한 곳에 보관하세요.
           </p>
           <button className="primary" onClick={onExport}>백업 파일 저장</button>
         </div>

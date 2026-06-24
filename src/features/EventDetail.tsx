@@ -16,7 +16,7 @@ export function EventDetail({ nav, back, id }: { nav: Nav; back: () => void; id:
   const direction = isMine ? 'RECEIVED' : 'GIVEN';
   const recs = records.filter((r) => r.eventId === id && !r.deletedAt);
   const stats = eventStats(recs, personMap, { direction });
-  const totalLabel = isMine ? (isFuneral ? '받은 조의' : '받은 금액') : '내가 낸 금액';
+  const totalLabel = isMine ? (isFuneral ? '받은 조의' : '받은 마음') : '내가 전한 마음';
 
   return (
     <div className={isFuneral ? 'funeral' : ''}>
