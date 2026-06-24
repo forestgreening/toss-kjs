@@ -13,6 +13,7 @@ export function PersonDetail({ back, id }: { back: () => void; id: string }) {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
   const [editName, setEditName] = useState('');
   const [editPhone, setEditPhone] = useState('');
+  const [mergeQuery, setMergeQuery] = useState('');
 
   if (!person) return <div className="center">사람을 찾을 수 없어요</div>;
 
@@ -20,6 +21,12 @@ export function PersonDetail({ back, id }: { back: () => void; id: string }) {
   const hint = suggestAmount(records, id);
   const recs = records.filter((r) => r.personId === id && !r.deletedAt).sort((a, b) => b.date - a.date);
   const others = persons.filter((p) => p.id !== id);
+  // 합치기 후보: 검색어가 있으면 이름 검색, 없으면 "이름이 같은 사람"만 제안(번호/개명으로 갈린 동일인)
+  const q = mergeQuery.trim().toLowerCase();
+  const nameKey = person.displayName.trim().toLowerCase();
+  const mergeCandidates = q
+    ? others.filter((p) => p.displayName.toLowerCase().includes(q))
+    : others.filter((p) => p.displayName.trim().toLowerCase() === nameKey);
 
   function startEdit() {
     setEditName(person!.displayName);
@@ -59,20 +66,34 @@ export function PersonDetail({ back, id }: { back: () => void; id: string }) {
               <div className="card">
                 <b>같은 분이 따로 있나요?</b>
                 <div className="muted" style={{ margin: '4px 0 10px' }}>
-                  개명·번호 변경 등으로 따로 저장된 같은 분이면, 합쳐서 한 사람으로 정리해요.
+                  개명·번호 변경으로 같은 분이 둘로 나뉘었으면 합쳐서 정리해요.
                 </div>
-                {others.map((p) => {
-                  const ol = personLedger(records, p.id);
-                  return (
-                    <div key={p.id} className="list-item" onClick={() => doMerge(p.id, p.displayName)}>
-                      <div>
-                        <b>{p.displayName}</b>
-                        <div className="muted">받은 마음 {formatKRW(ol.receivedSum)} · 보낸 마음 {formatKRW(ol.givenSum)}</div>
-                      </div>
-                      <span className="muted">합치기 ›</span>
+                <input
+                  className="field"
+                  placeholder="합칠 사람 이름 검색"
+                  value={mergeQuery}
+                  onChange={(e) => setMergeQuery(e.target.value)}
+                />
+                <div style={{ marginTop: 8 }}>
+                  {mergeCandidates.length === 0 ? (
+                    <div className="muted" style={{ textAlign: 'center', padding: '12px 0' }}>
+                      {q ? '검색 결과가 없어요' : '이름이 같은 사람이 없어요 · 위에서 검색해 고를 수 있어요'}
                     </div>
-                  );
-                })}
+                  ) : (
+                    mergeCandidates.map((p) => {
+                      const ol = personLedger(records, p.id);
+                      return (
+                        <div key={p.id} className="list-item" onClick={() => doMerge(p.id, p.displayName)}>
+                          <div>
+                            <b>{p.displayName}</b>
+                            <div className="muted">받은 마음 {formatKRW(ol.receivedSum)} · 보낸 마음 {formatKRW(ol.givenSum)}</div>
+                          </div>
+                          <span className="muted">합치기 ›</span>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
               </div>
             )}
           </>
@@ -130,7 +151,7 @@ export function PersonDetail({ back, id }: { back: () => void; id: string }) {
               })}
             </div>
 
-            <button className="ghost" style={{ width: '100%' }} onClick={startEdit}>수정</button>
+            <button className="ghost" style={{ width: '100%' }} onClick={startEdit}>이름·번호 수정</button>
             <button
               className="ghost"
               style={{ width: '100%', color: 'var(--red)', borderColor: '#f7c5c9', marginTop: 8 }}
