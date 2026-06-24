@@ -8,7 +8,7 @@ import {
   saveAsNewPerson,
   type NewEntryInput,
 } from '../data/ledgerService';
-import { pickContact } from '../platform/contacts';
+import { pickContact, contactsSupported } from '../platform/contacts';
 import { newId } from '../lib/id';
 import { formatMan } from '../ui/format';
 import type { Direction, Person, OwnerSide } from '../domain/models';
@@ -164,7 +164,7 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
           <label className="lbl">이름</label>
           <div style={{ display: 'flex', gap: 8 }}>
             <input className="field" style={{ flex: 1 }} placeholder="이름 (필수)" value={name} onChange={(e) => setName(e.target.value)} />
-            <button className="ghost" onClick={onPickContact}>연락처</button>
+            {contactsSupported() && <button className="ghost" onClick={onPickContact}>연락처</button>}
           </div>
           <label className="lbl">전화번호 (선택 — 같은 사람 자동 정리)</label>
           <input className="field" inputMode="tel" placeholder="010-0000-0000" value={phone} onChange={(e) => setPhone(e.target.value)} />

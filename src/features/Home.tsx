@@ -2,6 +2,7 @@ import type { Nav } from '../app/App';
 import { useLedger } from '../app/store';
 import { TopBar } from '../ui/TopBar';
 import { formatKRW, formatValue, formatDate } from '../ui/format';
+import { seedSample } from '../data/seed';
 import type { Direction, LedgerRecord } from '../domain/models';
 
 function sum(records: LedgerRecord[], dir: Direction): number {
@@ -11,7 +12,11 @@ function sum(records: LedgerRecord[], dir: Direction): number {
 }
 
 export function Home({ nav }: { nav: Nav }) {
-  const { events, records, personMap } = useLedger();
+  const { events, records, personMap, reload } = useLedger();
+  const onSeed = async () => {
+    await seedSample(Date.now());
+    await reload();
+  };
   const recv = sum(records, 'RECEIVED');
   const give = sum(records, 'GIVEN');
   const net = recv - give;
@@ -57,13 +62,25 @@ export function Home({ nav }: { nav: Nav }) {
           <span className="muted">›</span>
         </div>
 
+        {records.length === 0 && (
+          <div className="card" style={{ background: 'var(--blue-weak)' }}>
+            <b>처음이신가요?</b>
+            <div className="muted" style={{ margin: '8px 0 14px', lineHeight: 1.7 }}>
+              ① 내 결혼·돌 등에서 <b>받은</b> 건 [내 경조사]에서 정산<br />
+              ② 남에게 <b>보낸</b> 축의·조의는 아래 [기록 추가]로<br />
+              → 사람별 장부에서 한눈에 모여요
+            </div>
+            <button className="ghost" style={{ width: '100%' }} onClick={onSeed}>예시로 둘러보기</button>
+          </div>
+        )}
+
         <div className="card">
           <div className="row">
             <b>최근 기록</b>
             <span className="tag" style={{ cursor: 'pointer' }} onClick={() => nav({ name: 'ledger' })}>전체</span>
           </div>
           {recent.length === 0 ? (
-            <div className="center">아직 기록이 없어요 · 아래 + 기록 추가로 시작하세요</div>
+            <div className="center">아직 기록이 없어요</div>
           ) : (
             recent.map((r) => {
               const occ = r.occasion ?? events.find((e) => e.id === r.eventId)?.title ?? null;
