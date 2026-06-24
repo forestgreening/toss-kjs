@@ -17,6 +17,8 @@ export interface NewEntryInput {
   eventId?: string | null;
   /** 경조사 태그(이벤트 비연결 단건용). 예: "결혼식" 또는 직접 입력 */
   occasion?: string | null;
+  /** 새 사람일 때 함께 저장할 메모(누구인지 단서). 기존 사람엔 적용 안 함. */
+  note?: string | null;
   date: number;
   now: number;
   /** id 생성기(테스트에서 주입 가능, 실제론 uuid) */
@@ -49,7 +51,7 @@ export async function addEntry(input: NewEntryInput): Promise<AddEntryResult> {
       phoneRaw: input.phoneRaw ?? null,
       status: 'MANUAL',
       mergedFrom: [],
-      note: null,
+      note: input.note?.trim() || null,
       createdAt: input.now,
       updatedAt: input.now,
     };
@@ -74,7 +76,7 @@ export async function saveAsNewPerson(input: NewEntryInput): Promise<AddEntryRes
     phoneRaw: input.phoneRaw ?? null,
     status: 'MANUAL',
     mergedFrom: [],
-    note: null,
+    note: input.note?.trim() || null,
     createdAt: input.now,
     updatedAt: input.now,
   });

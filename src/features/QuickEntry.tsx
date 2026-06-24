@@ -33,6 +33,7 @@ export function QuickEntry({ nav, back, eventId }: { nav: Nav; back: () => void;
   const [amount, setAmount] = useState('');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [note, setNote] = useState('');
   const [occasion, setOccasion] = useState(''); // '' = 없음
   const [customMode, setCustomMode] = useState(false);
   const [pending, setPending] = useState<{ candidates: Person[]; input: NewEntryInput } | null>(null);
@@ -62,6 +63,7 @@ export function QuickEntry({ nav, back, eventId }: { nav: Nav; back: () => void;
       amount: amountNum,
       eventId: eventId ?? null,
       occasion: occasion.trim() || null,
+      note: note.trim() || null,
       date: t,
       now: t,
       newId,
@@ -74,6 +76,7 @@ export function QuickEntry({ nav, back, eventId }: { nav: Nav; back: () => void;
     setAmount('');
     setName('');
     setPhone('');
+    setNote('');
     // occasion은 유지(같은 경조사 연속 입력 편의)
   }
 
@@ -133,6 +136,8 @@ export function QuickEntry({ nav, back, eventId }: { nav: Nav; back: () => void;
           </div>
           <label className="lbl">전화번호 (선택 — 같은 사람 자동 정리)</label>
           <input className="field" inputMode="tel" placeholder="010-0000-0000" value={phone} onChange={(e) => setPhone(e.target.value)} />
+          <label className="lbl">메모 (선택)</label>
+          <input className="field" placeholder="예) 엄마의 작은할머니" value={note} onChange={(e) => setNote(e.target.value)} />
         </div>
 
         {!lockedToEvent && (
