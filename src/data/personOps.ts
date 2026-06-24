@@ -11,17 +11,19 @@ import type { Person } from '../domain/models';
 /** 이름/전화번호 수정. 전화번호는 입력 시 재정규화. */
 export async function editPerson(
   id: string,
-  patch: { displayName?: string; phoneRaw?: string | null },
+  patch: { displayName?: string; phoneRaw?: string | null; note?: string | null },
   now: number,
 ): Promise<void> {
   const p = await personRepo.get(id);
   if (!p) return;
   const phoneGiven = patch.phoneRaw !== undefined;
+  const noteGiven = patch.note !== undefined;
   const updated: Person = {
     ...p,
     displayName: patch.displayName?.trim() || p.displayName,
     phoneRaw: phoneGiven ? (patch.phoneRaw?.trim() || null) : p.phoneRaw,
     phoneE164: phoneGiven ? normalizePhone(patch.phoneRaw ?? null) : p.phoneE164,
+    note: noteGiven ? (patch.note?.trim() || null) : p.note,
     updatedAt: now,
   };
   await personRepo.put(updated);

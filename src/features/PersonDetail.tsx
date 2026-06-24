@@ -13,6 +13,7 @@ export function PersonDetail({ back, id }: { back: () => void; id: string }) {
   const [mode, setMode] = useState<'view' | 'edit' | 'merge'>('view');
   const [editName, setEditName] = useState('');
   const [editPhone, setEditPhone] = useState('');
+  const [editNote, setEditNote] = useState('');
   const [mergeQuery, setMergeQuery] = useState('');
 
   if (!person) return <div className="center">사람을 찾을 수 없어요</div>;
@@ -31,10 +32,11 @@ export function PersonDetail({ back, id }: { back: () => void; id: string }) {
   function startEdit() {
     setEditName(person!.displayName);
     setEditPhone(person!.phoneRaw ?? '');
+    setEditNote(person!.note ?? '');
     setMode('edit');
   }
   async function saveEdit() {
-    await editPerson(id, { displayName: editName, phoneRaw: editPhone || null }, Date.now());
+    await editPerson(id, { displayName: editName, phoneRaw: editPhone || null, note: editNote || null }, Date.now());
     await reload();
     setMode('view');
   }
@@ -55,6 +57,8 @@ export function PersonDetail({ back, id }: { back: () => void; id: string }) {
             <input className="field" value={editName} onChange={(e) => setEditName(e.target.value)} />
             <label className="lbl">전화번호</label>
             <input className="field" inputMode="tel" placeholder="010-0000-0000" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} />
+            <label className="lbl">메모</label>
+            <input className="field" placeholder="누구인지 단서 (예: 엄마의 작은할머니)" value={editNote} onChange={(e) => setEditNote(e.target.value)} />
             <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
               <button className="ghost" style={{ flex: 1 }} onClick={() => setMode('view')}>취소</button>
               <button className="primary" style={{ flex: 1 }} onClick={saveEdit}>저장</button>
@@ -101,6 +105,9 @@ export function PersonDetail({ back, id }: { back: () => void; id: string }) {
 
         {mode === 'view' && (
           <>
+            {person.note && (
+              <div className="muted" style={{ margin: '-2px 4px 12px' }}>📝 {person.note}</div>
+            )}
             <div className="card">
               <div className="muted">주고받은 마음</div>
               <div className={'big ' + (l.net >= 0 ? 'net-pos' : 'net-neg')}>{formatKRW(l.net)}</div>

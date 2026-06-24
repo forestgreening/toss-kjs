@@ -26,6 +26,7 @@ export function Ledger({ nav, back }: { nav: Nav; back: () => void }) {
                 <div>
                   <b>{p.displayName}</b>
                   <div className="muted">받은 마음 {formatKRW(l.receivedSum)} · 보낸 마음 {formatKRW(l.givenSum)}</div>
+                  {p.note && <div className="muted">📝 {p.note}</div>}
                 </div>
                 <span className={l.net >= 0 ? 'net-pos' : 'net-neg'}>
                   {l.net >= 0 ? '+' : ''}{formatKRW(l.net)}
