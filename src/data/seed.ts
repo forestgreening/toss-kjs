@@ -34,6 +34,7 @@ export function forgetSeed(): void {
 }
 
 export async function seedSample(now: number): Promise<void> {
+  await clearSeed(); // 이미 둘러보기 중이면 이전 예시를 먼저 정리(중복 누적 방지)
   const ids: SeedIds = { persons: [], events: [], records: [] };
 
   const ev: EventRec = {
