@@ -13,6 +13,7 @@ export function suggestAmount(
     (r) =>
       r.personId === personId &&
       !r.deletedAt &&
+      !r.giftName && // 선물은 추천 금액 기준에서 제외(현금만)
       r.direction === 'RECEIVED' &&
       typeof r.amount === 'number',
   );

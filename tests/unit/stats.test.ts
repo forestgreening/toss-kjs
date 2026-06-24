@@ -35,7 +35,8 @@ describe('eventStats — 이벤트 정산 (AC4)', () => {
       rec({ id: 'r2', personId: 'p2', direction: 'RECEIVED', amount: 50000 }),
       rec({ id: 'r3', personId: 'p3', direction: 'RECEIVED', amount: 30000 }),
       rec({ id: 'r4', personId: 'p4', direction: 'RECEIVED', amount: 20000 }),
-      rec({ id: 'r5', personId: 'p1', direction: 'RECEIVED', amount: null, giftName: '화환' }), // 선물 → 제외
+      rec({ id: 'r5', personId: 'p1', direction: 'RECEIVED', amount: null, giftName: '화환' }), // 선물(금액 없음) → 제외
+      rec({ id: 'r8', personId: 'p1', direction: 'RECEIVED', amount: 999, giftName: '선물세트' }), // 선물(추정금액 있어도) → 제외
       rec({ id: 'r6', personId: 'p2', direction: 'RECEIVED', amount: 999999, deletedAt: 1 }), // 삭제 → 제외
       rec({ id: 'r7', personId: 'p1', direction: 'GIVEN', amount: 70000 }), // 다른 방향 → 제외
     ];

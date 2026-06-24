@@ -68,4 +68,9 @@ describe('backup export/import 왕복 무결성 (AC11)', () => {
     expect(() => importData(null)).toThrow(SchemaVersionError);
     expect(() => importData({ exportedAt: 1, data: makeDataset() })).toThrow(SchemaVersionError);
   });
+
+  it('구조 손상(배열 누락·id 없음)은 거부 — wipe 전에 막음', () => {
+    expect(() => importData({ schemaVersion: 1, exportedAt: 1, data: {} })).toThrow(SchemaVersionError);
+    expect(() => importData({ schemaVersion: 1, exportedAt: 1, data: { persons: [{}], events: [], records: [] } })).toThrow(SchemaVersionError);
+  });
 });

@@ -17,11 +17,12 @@ export async function exportDataset(): Promise<Dataset> {
 /** wipe-and-restore: 기존 데이터를 전부 비우고 Dataset을 원본 id 그대로 적재. */
 export async function replaceAll(d: Dataset): Promise<void> {
   await db.transaction('rw', db.persons, db.events, db.records, async () => {
-    await Promise.all([db.persons.clear(), db.events.clear(), db.records.clear()]);
-    await Promise.all([
-      db.persons.bulkAdd(d.persons),
-      db.events.bulkAdd(d.events),
-      db.records.bulkAdd(d.records),
-    ]);
+    // clear → put 순차 실행. bulkPut은 중복 id에도 견고(복원 멱등성).
+    await db.persons.clear();
+    await db.events.clear();
+    await db.records.clear();
+    await db.persons.bulkPut(d.persons);
+    await db.events.bulkPut(d.events);
+    await db.records.bulkPut(d.records);
   });
 }

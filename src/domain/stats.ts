@@ -1,7 +1,8 @@
 // 통계 계산 (계획서 §2 AC4 / AC5)
 //  - 이벤트 정산: 총액 / 건수 / 평균 / 최고 기여자 TopN
 //  - 사람 장부: 받은 합 / 준 합 / 순(net)
-// 삭제된(deletedAt) 기록과 금액 없는(선물) 기록은 금액 집계에서 제외한다.
+// 삭제된(deletedAt) 기록과 "선물"(giftName 있는 기록)은 현금 집계에서 제외한다.
+// 선물은 추정 금액이 있어도 주관적이므로 합계/Top/net/힌트에 넣지 않는다(현금 장부 일관성).
 
 import type { Direction, LedgerRecord, Person } from './models';
 
@@ -19,7 +20,7 @@ export interface EventStats {
 }
 
 function hasAmount(r: LedgerRecord): r is LedgerRecord & { amount: number } {
-  return !r.deletedAt && typeof r.amount === 'number';
+  return !r.deletedAt && !r.giftName && typeof r.amount === 'number';
 }
 
 export function eventStats(

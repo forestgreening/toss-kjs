@@ -64,5 +64,16 @@ export function importData(file: unknown): Dataset {
   if (!f.data || typeof f.data !== 'object') {
     throw new SchemaVersionError('백업 데이터가 비어 있습니다.');
   }
+  const d = f.data as Partial<Dataset>;
+  if (!Array.isArray(d.persons) || !Array.isArray(d.events) || !Array.isArray(d.records)) {
+    throw new SchemaVersionError('백업 파일 구조가 올바르지 않습니다(사람/경조사/기록 누락).');
+  }
+  // 각 레코드가 최소한 string id를 갖는지 검증(불량 행이 복원 트랜잭션을 깨뜨리지 않도록)
+  const hasValidIds = [...d.persons, ...d.events, ...d.records].every(
+    (row) => row && typeof (row as { id?: unknown }).id === 'string',
+  );
+  if (!hasValidIds) {
+    throw new SchemaVersionError('백업 파일에 손상된 항목이 있습니다(id 누락).');
+  }
   return deepClone(f.data as Dataset);
 }
