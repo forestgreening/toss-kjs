@@ -5,7 +5,7 @@ import { personLedger } from '../domain/stats';
 import { suggestAmount } from '../domain/hint';
 import { deletePerson, deleteRecord } from '../data/erase';
 import { editPerson, mergePeople } from '../data/personOps';
-import { formatKRW, formatDate } from '../ui/format';
+import { formatKRW, formatValue, formatDate } from '../ui/format';
 
 export function PersonDetail({ back, home, id }: { back: () => void; home: () => void; id: string }) {
   const { persons, records, reload, events } = useLedger();
@@ -138,7 +138,7 @@ export function PersonDetail({ back, home, id }: { back: () => void; home: () =>
                       {occ ? <span className="muted" style={{ marginLeft: 8 }}>· {occ}</span> : null}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <b>{r.amount != null ? formatKRW(r.amount) : (r.giftName ?? '선물')}</b>
+                      <b>{formatValue(r.amount, r.giftName)}</b>
                       <button
                         className="back"
                         style={{ color: 'var(--gray)', fontSize: 16 }}

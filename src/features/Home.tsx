@@ -1,7 +1,7 @@
 import type { Nav } from '../app/App';
 import { useLedger } from '../app/store';
 import { TopBar } from '../ui/TopBar';
-import { formatKRW, formatDate } from '../ui/format';
+import { formatKRW, formatValue, formatDate } from '../ui/format';
 import type { Direction, LedgerRecord } from '../domain/models';
 
 function sum(records: LedgerRecord[], dir: Direction): number {
@@ -78,7 +78,7 @@ export function Home({ nav }: { nav: Nav }) {
                       {occ ? ` · ${occ}` : ''} · {formatDate(r.date)}
                     </div>
                   </div>
-                  <b>{r.amount != null ? formatKRW(r.amount) : (r.giftName ?? '선물')}</b>
+                  <b>{formatValue(r.amount, r.giftName)}</b>
                 </div>
               );
             })

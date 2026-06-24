@@ -30,7 +30,9 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
   const [direction, setDirection] = useState<Direction>(
     fixedEvent ? dirFromOwner(fixedEvent.ownerSide) : 'GIVEN',
   );
+  const [entryType, setEntryType] = useState<'money' | 'gift'>('money');
   const [amount, setAmount] = useState('');
+  const [giftName, setGiftName] = useState('');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [note, setNote] = useState('');
@@ -39,7 +41,9 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
   const [savedCount, setSavedCount] = useState(0);
 
   const amountNum = amount ? parseInt(amount, 10) : null;
-  const canSave = name.trim().length > 0 && amountNum !== null && amountNum > 0;
+  const canSave =
+    name.trim().length > 0 &&
+    (entryType === 'money' ? amountNum !== null && amountNum > 0 : giftName.trim().length > 0);
 
   async function onPickContact() {
     try {
@@ -60,6 +64,7 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
       phoneRaw: phone.trim() || null,
       direction,
       amount: amountNum,
+      giftName: entryType === 'gift' ? giftName.trim() || null : null,
       eventId: eventId ?? null,
       occasion: occasion.trim() || null,
       note: note.trim() || null,
@@ -73,6 +78,7 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
     await reload();
     setSavedCount((c) => c + 1);
     setAmount('');
+    setGiftName('');
     setName('');
     setPhone('');
     setNote('');
@@ -111,22 +117,49 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
         </div>
 
         <div className="card" style={{ marginTop: 12 }}>
-          <input
-            className="amount"
-            inputMode="numeric"
-            placeholder="0"
-            value={amount ? Number(amount).toLocaleString('ko-KR') : ''}
-            onChange={(e) => setAmount(e.target.value.replace(/[^\d]/g, ''))}
-            autoFocus
-          />
-          <div className="chips">
-            {CHIPS.map((c) => (
-              <button key={c} className="chip" onClick={() => setAmount(String((amountNum ?? 0) + c))}>
-                +{formatMan(c)}
-              </button>
-            ))}
-            <button className="chip" onClick={() => setAmount('')}>지우기</button>
+          <div className="seg" style={{ marginBottom: 14 }}>
+            <button className={entryType === 'money' ? 'on' : ''} onClick={() => setEntryType('money')}>금액</button>
+            <button className={entryType === 'gift' ? 'on' : ''} onClick={() => setEntryType('gift')}>선물</button>
           </div>
+
+          {entryType === 'money' ? (
+            <>
+              <input
+                className="amount"
+                inputMode="numeric"
+                placeholder="0"
+                value={amount ? Number(amount).toLocaleString('ko-KR') : ''}
+                onChange={(e) => setAmount(e.target.value.replace(/[^\d]/g, ''))}
+                autoFocus
+              />
+              <div className="chips">
+                {CHIPS.map((c) => (
+                  <button key={c} className="chip" onClick={() => setAmount(String((amountNum ?? 0) + c))}>
+                    +{formatMan(c)}
+                  </button>
+                ))}
+                <button className="chip" onClick={() => setAmount('')}>지우기</button>
+              </div>
+            </>
+          ) : (
+            <>
+              <input
+                className="field"
+                placeholder="선물 (예: 배냇저고리, 기저귀 세트)"
+                value={giftName}
+                onChange={(e) => setGiftName(e.target.value)}
+                autoFocus
+              />
+              <label className="lbl">추정 금액 (선택)</label>
+              <input
+                className="field"
+                inputMode="numeric"
+                placeholder="모르면 비워두세요"
+                value={amount ? Number(amount).toLocaleString('ko-KR') : ''}
+                onChange={(e) => setAmount(e.target.value.replace(/[^\d]/g, ''))}
+              />
+            </>
+          )}
 
           <label className="lbl">이름</label>
           <div style={{ display: 'flex', gap: 8 }}>

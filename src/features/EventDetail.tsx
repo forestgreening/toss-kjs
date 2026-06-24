@@ -4,7 +4,7 @@ import { TopBar } from '../ui/TopBar';
 import { eventStats } from '../domain/stats';
 import { deleteRecord } from '../data/erase';
 import { MonetizationCard } from './MonetizationCard';
-import { formatKRW, EVENT_LABEL } from '../ui/format';
+import { formatKRW, formatValue, EVENT_LABEL } from '../ui/format';
 
 export function EventDetail({ nav, back, home, id }: { nav: Nav; back: () => void; home: () => void; id: string }) {
   const { events, records, personMap, reload } = useLedger();
@@ -72,7 +72,7 @@ export function EventDetail({ nav, back, home, id }: { nav: Nav; back: () => voi
                     {personMap.get(r.personId)?.displayName ?? '(이름 없음)'}
                   </span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <b>{r.amount != null ? formatKRW(r.amount) : (r.giftName ?? '선물')}</b>
+                    <b>{formatValue(r.amount, r.giftName)}</b>
                     <button
                       className="back"
                       style={{ color: 'var(--gray)', fontSize: 16 }}

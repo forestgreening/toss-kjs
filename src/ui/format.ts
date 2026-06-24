@@ -12,6 +12,12 @@ export function formatMan(n: number): string {
   return n.toLocaleString('ko-KR');
 }
 
+/** 기록 1건의 표시값: 선물명 우선(추정 금액 있으면 괄호), 없으면 금액. */
+export function formatValue(amount: number | null | undefined, giftName: string | null | undefined): string {
+  if (giftName) return amount != null ? `${giftName} (${formatKRW(amount)})` : giftName;
+  return formatKRW(amount);
+}
+
 export function formatDate(epoch: number): string {
   const d = new Date(epoch);
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
