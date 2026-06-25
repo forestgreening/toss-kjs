@@ -18,6 +18,7 @@ import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { tossConfigured, loginToUserKey } from './toss-auth.mjs';
 
 const PORT = Number(process.env.PORT ?? 8787);
 const DATA_DIR = resolve(process.env.DATA_DIR ?? join(process.cwd(), 'server', '.data'));
@@ -33,7 +34,7 @@ function keyToPath(key) {
 
 function cors(res) {
   res.setHeader('Access-Control-Allow-Origin', CORS_ORIGIN);
-  res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'content-type, authorization');
 }
 
@@ -90,6 +91,31 @@ const server = createServer(async (req, res) => {
     if (req.method === 'OPTIONS') return send(res, 204, null);
 
     const url = new URL(req.url, `http://${req.headers.host}`);
+
+    // ── 토스 로그인 교환: authorizationCode → userKey ──
+    if (url.pathname === '/auth/login') {
+      if (req.method !== 'POST') return send(res, 405, { error: 'method not allowed' });
+      if (!tossConfigured()) {
+        return send(res, 501, { error: 'toss login not configured (TOSS_CLIENT_CERT/KEY)' });
+      }
+      let body;
+      try {
+        body = JSON.parse(await readBody(req));
+      } catch {
+        return send(res, 400, { error: 'invalid json' });
+      }
+      if (!body?.authorizationCode || !body?.referrer) {
+        return send(res, 400, { error: 'authorizationCode/referrer required' });
+      }
+      try {
+        const { userKey } = await loginToUserKey(body);
+        return send(res, 200, { userKey });
+      } catch (e) {
+        console.error('[auth]', e);
+        return send(res, 502, { error: 'toss login exchange failed' });
+      }
+    }
+
     const match = url.pathname.match(/^\/backup\/([^/]+)$/);
     if (!match) return send(res, 404, { error: 'not found' });
     if (!authed(req)) return send(res, 401, { error: 'unauthorized' });

@@ -5,19 +5,27 @@ import { useDialog } from '../ui/Dialog';
 import { exportDataset, replaceAll } from '../data/backupStore';
 import { exportData, importData } from '../domain/backup';
 import { backupToCloud, restoreFromCloud, type CloudConfig } from '../data/cloud-backup';
-import { getDeviceKey } from '../platform/identity';
+import { getDeviceKey, requestAppLogin } from '../platform/identity';
+import { exchangeAuthCode } from '../data/auth';
 import { DecryptError } from '../domain/crypto';
 
 const CLOUD_URL_KEY = 'maeumjangbu.cloud.url';
 const LOCAL_KEY_KEY = 'maeumjangbu.cloud.localkey';
+const USERKEY_KEY = 'maeumjangbu.cloud.userkey';
+
+// 복원 키 출처: user(토스 로그인 userKey, 가장 안정) > device(익명 키) > local(기기 전용, 비이동).
+type KeySource = 'user' | 'device' | 'local';
 
 /** 키 출처만 확인(부작용 없음 — 로컬 키를 새로 만들지 않는다). */
-async function peekKeySource(): Promise<'device' | 'local'> {
+async function peekKeySource(): Promise<KeySource> {
+  if (localStorage.getItem(USERKEY_KEY)) return 'user';
   return (await getDeviceKey()) ? 'device' : 'local';
 }
 
-/** 백업 식별자: 토스 익명 키(getDeviceKey) 우선, 없으면 기기 로컬 랜덤 키(브라우저/실험용). */
-async function resolveCloudKey(): Promise<{ key: string; source: 'device' | 'local' }> {
+/** 백업 식별자: userKey > 토스 익명 키 > 기기 로컬 랜덤 키(브라우저/실험용). */
+async function resolveCloudKey(): Promise<{ key: string; source: KeySource }> {
+  const userKey = localStorage.getItem(USERKEY_KEY);
+  if (userKey) return { key: userKey, source: 'user' };
   const deviceKey = await getDeviceKey();
   if (deviceKey) return { key: deviceKey, source: 'device' };
   let local = localStorage.getItem(LOCAL_KEY_KEY);
@@ -36,17 +44,41 @@ export function Backup({ back, home }: { back: () => void; home: () => void }) {
   const [passphrase, setPassphrase] = useState('');
   const [cloudBusy, setCloudBusy] = useState(false);
   const [cloudMsg, setCloudMsg] = useState('');
-  const [localKeyMode, setLocalKeyMode] = useState(false);
+  const [keySource, setKeySource] = useState<KeySource>('local');
 
   useEffect(() => {
     let alive = true;
     peekKeySource().then((s) => {
-      if (alive) setLocalKeyMode(s === 'local');
+      if (alive) setKeySource(s);
     });
     return () => {
       alive = false;
     };
   }, []);
+
+  async function onTossLogin() {
+    if (!cloudUrl.trim()) {
+      setCloudMsg('먼저 백업 서버 주소를 입력하세요.');
+      return;
+    }
+    setCloudBusy(true);
+    setCloudMsg('');
+    try {
+      const login = await requestAppLogin();
+      if (!login) {
+        setCloudMsg('토스 앱에서만 로그인할 수 있어요.');
+        return;
+      }
+      const userKey = await exchangeAuthCode(cloudUrl.trim(), login);
+      localStorage.setItem(USERKEY_KEY, userKey);
+      setKeySource('user');
+      setCloudMsg('토스 로그인 완료 — 복원 키가 고정됐어요.');
+    } catch (e) {
+      setCloudMsg(e instanceof Error ? e.message : String(e));
+    } finally {
+      setCloudBusy(false);
+    }
+  }
 
   function persistUrl(v: string) {
     setCloudUrl(v);
@@ -208,9 +240,24 @@ export function Backup({ back, home }: { back: () => void; home: () => void }) {
               {cloudBusy ? '처리 중…' : '백업'}
             </button>
           </div>
-          {localKeyMode && (
+          {keySource !== 'user' && (
+            <button className="ghost" style={{ width: '100%', marginTop: 8 }} disabled={cloudBusy} onClick={onTossLogin}>
+              토스 로그인 — 복원 키 고정(기기변경 대비)
+            </button>
+          )}
+          {keySource === 'local' && (
             <div className="muted" style={{ marginTop: 10 }}>
               ℹ️ 지금은 <b>이 기기 전용 키</b>로 백업돼요. 토스 로그인 전에는 다른 기기에서 복원되지 않을 수 있어요.
+            </div>
+          )}
+          {keySource === 'device' && (
+            <div className="muted" style={{ marginTop: 10 }}>
+              ℹ️ 토스 <b>익명 키</b>로 백업돼요. 기기변경에도 안정적으로 복원하려면 토스 로그인을 권장해요.
+            </div>
+          )}
+          {keySource === 'user' && (
+            <div className="muted" style={{ marginTop: 10 }}>
+              ✅ 토스 <b>로그인 키</b>로 백업돼요(기기를 바꿔도 같은 키로 복원).
             </div>
           )}
           {cloudMsg && <div className="muted" style={{ marginTop: 10, color: 'var(--blue)' }}>{cloudMsg}</div>}
