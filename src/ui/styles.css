@@ -85,7 +85,10 @@ button.ghost:active { background: #f7f8f9; }
 .rank { width: 22px; height: 22px; border-radius: 50%; background: #f1f5fb; color: var(--blue); font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
 
 /* FAB */
-.fab { position: fixed; left: 50%; transform: translateX(-50%); bottom: 20px; max-width: 480px; width: calc(100% - 32px); }
+.fab { position: fixed; left: 50%; transform: translateX(-50%); bottom: 20px; max-width: 480px; width: calc(100% - 32px); z-index: 20; }
+/* Home FAB은 .primary와 .fab을 함께 써서, :active의 scale(.99)이 중앙정렬 translateX(-50%)을
+   덮어쓰지 않도록 둘을 함께 지정(더 높은 명시도로 button.primary:active를 이김). */
+button.primary.fab:active { transform: translateX(-50%) scale(.99); }
 
 /* Segmented */
 .seg { display: flex; background: var(--bg); border-radius: 12px; padding: 4px; }
