@@ -14,10 +14,15 @@
 - ✅ **동작하는 React+Vite 앱 완성** (브라우저 모드). 8화면: 홈·빠른입력·내경조사·정산상세·사람별장부·사람상세·백업·설정
   - 기능: 받음/보냄·금액/선물·경조사 태그·메모·날짜·연락처(지원환경)·자동병합/수동합치기·평생 net·적정금액 힌트·JSON 백업·예시 시드(둘러보기/지우기)·전 페이지 홈버튼
   - **고급 리디자인 적용**(Pretendard·파란 hero·아이콘 타일·SVG·카드 그림자) — 디자인 소스 zip은 .gitignore
-  - **테스트 52개 통과**(도메인/저장소). `npm run dev`로 실행(localhost:5173~), `npm test`로 검증.
+  - **테스트 102개 통과**(도메인/저장소). `npm run dev`로 실행(localhost:5173~), `npm test`로 검증.
 - ✅ **토스 번들 래핑 완료** — `@apps-in-toss/web-framework` 설치, 루트 `granite.config.ts`, SDK 어댑터(연락처 fetchContacts·appLogin·getAnonymousKey), `npm run bundle`(=`ait build`)로 `maeumjangbu.ait` 출품 아티팩트 생성 확인(~3.8MB, RN 0.84/0.72 빌드). 상세 [`docs/DEPLOY-TOSS.md`](./docs/DEPLOY-TOSS.md).
-- ⏳ **다음**: 콘솔 등록(앱ID·로고 → granite.config 교체) + `ait deploy` 업로드 + Phase 0 샌드박스 실측. 아래 §7.
+- ✅ **콘솔 등록 + 첫 번들 심사 통과(출시 대기)** — 스토어 노출명 '경조사 마음장부'. 로고(라이트/다크)·썸네일(1932×828)·가로배너(1504×741, 고대비)·세로 스크린샷 3장을 `assets/`에 커밋.
+- ✅ **출품 후 앱 개선(이번 세션 2026-06-25, 모두 코드 반영·테스트·시각검증 완료)** — ⚠️ **승인된 번들엔 미포함 → 다음 업데이트로 `npm run bundle` 재빌드·재검토 필요**:
+  - `fix(contacts)` 토스 WebView 연락처 SDK 라우팅 / 엑셀(CSV) import·export(초기 세팅 마이그레이션, `domain/csv.ts`·`data/csvService.ts`) / 인앱 배너(휴면 — `platform/ads.ts`의 `BANNER_AD_GROUP_ID` 빈 값) / 영속성 요청(`platform/storage.ts`)+백업 리마인더(`data/backupMeta.ts`) / 이름 자동완성 드롭다운+입력순간 인라인 힌트("지난번 OOO님에게 N원 받았어요", `domain/hint.ts`) / 사람별 장부 검색·필터·'갚을 차례' / 동명이인 새로 추가 시 구분 메모 필수 / FAB·하단 액션바 UI 버그 다수 수정.
+- ⏳ **다음**: (출시) 콘솔에서 승인 번들 '출시하기' → 이후 위 개선분 묶어 `npm run bundle` 재업로드·재검토. Phase 0 샌드박스 실측(연락처·영속성·식별자) + 광고 ID 발급(사업자/정산 등록, 검토 2~3일) 후 `ads.ts` `BANNER_AD_GROUP_ID` 교체.
 - ⚠️ **마감**: 앱인토스 바이브코딩 챌린지 6/30 첫 번들 등록(출품 목표).
+- 🔁 **이월 기능(데이터 모인 MVP 이후)**: 연령대·경조사별 평균 축의금 '시세'(서버 익명 버킷 집계, k-익명성·옵트인·부고 제외, 로컬 퍼스트 준수). 현재 적정금액 힌트는 개인 과거 기준(`suggestAmount`=마지막 받은 단일 금액)뿐.
+- 🛠 **검증 도구 메모**: Playwright는 전역 캐시(`~/AppData/Local/ms-playwright/chromium-1200`)만 있고 프로젝트엔 미설치 — 스크린샷/E2E는 스크래치패드에 `playwright` 설치 후 `chromium.launch({executablePath: <캐시 chrome.exe>})`로 사용. (Mac에선 경로/설치 재확인 필요)
 
 ## 3. 읽어야 할 문서 (우선순위 순)
 
