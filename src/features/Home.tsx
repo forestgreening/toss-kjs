@@ -2,6 +2,7 @@ import type { Nav } from '../app/App';
 import { useLedger } from '../app/store';
 import { TopBar } from '../ui/TopBar';
 import { formatKRW, formatValue, formatDate } from '../ui/format';
+import { rowButton } from '../ui/rowProps';
 import { seedSample, isSeedActive, clearSeed } from '../data/seed';
 import type { Direction, LedgerRecord } from '../domain/models';
 
@@ -126,7 +127,7 @@ export function Home({ nav }: { nav: Nav }) {
             recent.map((r) => {
               const occ = r.occasion ?? events.find((e) => e.id === r.eventId)?.title ?? null;
               return (
-                <div key={r.id} className="list-item" onClick={() => nav({ name: 'person', id: r.personId })}>
+                <div key={r.id} className="list-item" {...rowButton(() => nav({ name: 'person', id: r.personId }))}>
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontSize: 14.5, fontWeight: 700 }}>{personMap.get(r.personId)?.displayName ?? '(이름 없음)'}</div>
                     <div style={{ marginTop: 4, display: 'flex', alignItems: 'center', gap: 6 }}>

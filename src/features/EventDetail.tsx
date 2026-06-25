@@ -2,6 +2,7 @@ import type { Nav } from '../app/App';
 import { useLedger } from '../app/store';
 import { TopBar } from '../ui/TopBar';
 import { useDialog } from '../ui/Dialog';
+import { rowButton } from '../ui/rowProps';
 import { eventStats } from '../domain/stats';
 import { deleteRecord } from '../data/erase';
 import { MonetizationCard } from './MonetizationCard';
@@ -80,7 +81,7 @@ export function EventDetail({ nav, back, home, id }: { nav: Nav; back: () => voi
               .sort((a, b) => b.date - a.date)
               .map((r) => (
                 <div key={r.id} className="list-item">
-                  <span style={{ flex: 1, cursor: 'pointer' }} onClick={() => nav({ name: 'person', id: r.personId })}>
+                  <span style={{ flex: 1, cursor: 'pointer' }} {...rowButton(() => nav({ name: 'person', id: r.personId }))}>
                     {personMap.get(r.personId)?.displayName ?? '(이름 없음)'}
                   </span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>

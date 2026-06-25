@@ -3,6 +3,7 @@ import type { Nav } from '../app/App';
 import { useLedger } from '../app/store';
 import { TopBar } from '../ui/TopBar';
 import { useDialog } from '../ui/Dialog';
+import { rowButton } from '../ui/rowProps';
 import { wipeAll } from '../data/erase';
 
 export function Settings({ nav, back, home }: { nav: Nav; back: () => void; home: () => void }) {
@@ -41,7 +42,7 @@ export function Settings({ nav, back, home }: { nav: Nav; back: () => void; home
           </div>
         </div>
 
-        <div className="card list-item" onClick={() => nav({ name: 'backup' })}>
+        <div className="card list-item" {...rowButton(() => nav({ name: 'backup' }))}>
           <b>백업 / 복원</b>
           <span className="muted">›</span>
         </div>

@@ -1,14 +1,20 @@
+import { useMemo } from 'react';
 import type { Nav } from '../app/App';
 import { useLedger } from '../app/store';
 import { TopBar } from '../ui/TopBar';
+import { rowButton } from '../ui/rowProps';
 import { personLedger } from '../domain/stats';
 import { formatKRW } from '../ui/format';
 
 export function Ledger({ nav, back, home }: { nav: Nav; back: () => void; home: () => void }) {
   const { persons, records } = useLedger();
-  const rows = persons
-    .map((p) => ({ p, l: personLedger(records, p.id) }))
-    .sort((a, b) => Math.abs(b.l.net) - Math.abs(a.l.net));
+  const rows = useMemo(
+    () =>
+      persons
+        .map((p) => ({ p, l: personLedger(records, p.id) }))
+        .sort((a, b) => Math.abs(b.l.net) - Math.abs(a.l.net)),
+    [persons, records],
+  );
 
   // 사람이 사라진 고아 기록(예: 손상된 백업 복원)도 합계가 어긋나지 않게 묶어 보여줌
   const personIds = new Set(persons.map((p) => p.id));
@@ -42,7 +48,7 @@ export function Ledger({ nav, back, home }: { nav: Nav; back: () => void; home: 
         ) : (
           <div className="card">
             {rows.map(({ p, l }) => (
-              <div key={p.id} className="list-item" onClick={() => nav({ name: 'person', id: p.id })}>
+              <div key={p.id} className="list-item" {...rowButton(() => nav({ name: 'person', id: p.id }))}>
                 <div>
                   <b>{p.displayName}</b>
                   <div className="muted">받은 마음 {formatKRW(l.receivedSum)} · 보낸 마음 {formatKRW(l.givenSum)}</div>

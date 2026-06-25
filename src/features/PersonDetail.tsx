@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useLedger } from '../app/store';
 import { TopBar } from '../ui/TopBar';
 import { useDialog } from '../ui/Dialog';
+import { rowButton } from '../ui/rowProps';
 import { personLedger } from '../domain/stats';
 import { suggestAmount } from '../domain/hint';
 import { deletePerson, deleteRecord } from '../data/erase';
@@ -102,7 +103,7 @@ export function PersonDetail({ back, home, id }: { back: () => void; home: () =>
                 mergeCandidates.map((p) => {
                   const ol = personLedger(records, p.id);
                   return (
-                    <div key={p.id} className="list-item" onClick={() => doMerge(p.id, p.displayName)}>
+                    <div key={p.id} className="list-item" {...rowButton(() => doMerge(p.id, p.displayName))}>
                       <div>
                         <b>{p.displayName}</b>
                         <div className="muted">받은 마음 {formatKRW(ol.receivedSum)} · 보낸 마음 {formatKRW(ol.givenSum)}</div>

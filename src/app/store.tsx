@@ -1,7 +1,7 @@
 // 앱 상태 스토어 (경량). 저장소(Dexie)에서 전체를 읽어 메모리에 보관하고,
 // 변경 후 reload()로 갱신한다(데이터 규모가 작아 충분).
 
-import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, useMemo, type ReactNode } from 'react';
 import { personRepo } from '../data/repositories/personRepo';
 import { eventRepo } from '../data/repositories/eventRepo';
 import { recordRepo } from '../data/repositories/recordRepo';
@@ -36,13 +36,14 @@ export function LedgerProvider({ children }: { children: ReactNode }) {
     void reload();
   }, [reload]);
 
-  const personMap = new Map(persons.map((p) => [p.id, p]));
+  const personMap = useMemo(() => new Map(persons.map((p) => [p.id, p])), [persons]);
 
-  return (
-    <Ctx.Provider value={{ events, persons, records, ready, reload, personMap }}>
-      {children}
-    </Ctx.Provider>
+  const value = useMemo(
+    () => ({ events, persons, records, ready, reload, personMap }),
+    [events, persons, records, ready, reload, personMap],
   );
+
+  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
 export function useLedger(): LedgerState {

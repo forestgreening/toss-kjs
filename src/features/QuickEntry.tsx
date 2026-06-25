@@ -17,6 +17,7 @@ import {
   type TossContactsPage,
 } from '../platform/contacts';
 import { newId } from '../lib/id';
+import { rowButton } from '../ui/rowProps';
 import { formatMan, formatKRW, toDateInputValue, fromDateInputValue } from '../ui/format';
 import type { Direction, Person, OwnerSide } from '../domain/models';
 
@@ -279,7 +280,7 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
             "{pending.input.name}" 이름의 기록이 있어요. 같은 분이면 고르고, 아니면 새로 추가하세요.
           </div>
           {pending.candidates.map((c) => (
-            <div key={c.id} className="list-item" onClick={() => resolveWith(c.id)}>
+            <div key={c.id} className="list-item" {...rowButton(() => resolveWith(c.id))}>
               <div>
                 <b>{c.displayName}</b>
                 {c.note && <div className="muted">📝 {c.note}</div>}
@@ -316,7 +317,7 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
             />
             <div style={{ overflowY: 'auto', marginTop: 8 }}>
               {tcItems.map((c, i) => (
-                <div key={`${c.phoneNumber}-${i}`} className="list-item" onClick={() => chooseTossContact(c.name, c.phoneNumber)}>
+                <div key={`${c.phoneNumber}-${i}`} className="list-item" {...rowButton(() => chooseTossContact(c.name, c.phoneNumber))}>
                   <div>
                     <b>{c.name || '이름 없음'}</b>
                     <div className="muted">{c.phoneNumber}</div>
