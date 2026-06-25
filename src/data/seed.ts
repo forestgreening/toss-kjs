@@ -131,6 +131,78 @@ export async function seedSample(now: number): Promise<void> {
   await recordRepo.put(gift);
   ids.records.push(gift.id);
 
+  // 사람별 장부를 풍부하게 + 평생 균형(+/−) 데모: 받은/보낸을 섞어 net 다양화
+  const more: Array<{
+    name: string;
+    note: string | null;
+    received: number | null; // 내 결혼식에서 받은 금액(없으면 null)
+    given: number | null; // 내가 보낸 금액(없으면 null)
+    givenOccasion: string | null;
+  }> = [
+    { name: '윤서연', note: '사촌 언니', received: 100000, given: null, givenOccasion: null },
+    { name: '오준호', note: '동호회', received: 50000, given: 30000, givenOccasion: '집들이' },
+    { name: '장미경', note: '이모', received: null, given: 50000, givenOccasion: '생일' },
+    { name: '한지민', note: '직장 동료', received: 30000, given: 100000, givenOccasion: '결혼식' },
+    { name: '정민재', note: '고등학교 친구', received: 50000, given: 150000, givenOccasion: '결혼식' },
+  ];
+
+  for (const m of more) {
+    const id = newId();
+    const person: Person = {
+      id,
+      displayName: m.name,
+      phoneE164: null,
+      phoneRaw: null,
+      status: 'MANUAL',
+      mergedFrom: [],
+      note: m.note,
+      createdAt: now,
+      updatedAt: now,
+    };
+    await personRepo.put(person);
+    ids.persons.push(id);
+
+    if (m.received != null) {
+      const r: LedgerRecord = {
+        id: newId(),
+        eventId: ev.id,
+        personId: id,
+        direction: 'RECEIVED',
+        amount: m.received,
+        giftName: null,
+        date: ev.date,
+        source: 'MANUAL',
+        occasion: null,
+        memo: null,
+        deletedAt: null,
+        createdAt: now,
+        updatedAt: now,
+      };
+      await recordRepo.put(r);
+      ids.records.push(r.id);
+    }
+
+    if (m.given != null) {
+      const g2: LedgerRecord = {
+        id: newId(),
+        eventId: null,
+        personId: id,
+        direction: 'GIVEN',
+        amount: m.given,
+        giftName: null,
+        date: now - 300 * DAY,
+        source: 'MANUAL',
+        occasion: m.givenOccasion,
+        memo: null,
+        deletedAt: null,
+        createdAt: now,
+        updatedAt: now,
+      };
+      await recordRepo.put(g2);
+      ids.records.push(g2.id);
+    }
+  }
+
   try {
     localStorage.setItem(SEED_KEY, JSON.stringify(ids));
   } catch {
