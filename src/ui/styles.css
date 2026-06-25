@@ -84,6 +84,12 @@ button.ghost:active { background: #f7f8f9; }
 .pill { border: 0; background: #f1f5fb; color: var(--blue); font-size: 12px; font-weight: 700; border-radius: 7px; padding: 4px 9px; cursor: pointer; }
 .rank { width: 22px; height: 22px; border-radius: 50%; background: #f1f5fb; color: var(--blue); font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
 
+/* 이름 자동완성 드롭다운 */
+.suggest { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #fff; border: 1px solid var(--line-strong); border-radius: 12px; box-shadow: var(--card-shadow); z-index: 30; max-height: 264px; overflow-y: auto; }
+.suggest-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 11px 12px; border-top: 1px solid var(--line); cursor: pointer; }
+.suggest-item:first-child { border-top: 0; }
+.suggest-item:active { background: #f7f8f9; }
+
 /* FAB (하단 고정 액션바) — transform 대신 margin auto로 중앙정렬(:active scale과 충돌 없음) */
 .fab { position: fixed; left: 0; right: 0; bottom: 20px; margin: 0 auto; max-width: 448px; width: calc(100% - 32px); z-index: 20; }
 /* 떠 있는 액션바 뒤로 스크롤된 콘텐츠가 비쳐 보이지 않도록 하단 페이드 스크림.

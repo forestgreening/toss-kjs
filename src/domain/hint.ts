@@ -39,6 +39,27 @@ export interface EntryHint {
   suggested: number | null;
 }
 
+/** 이름 부분 일치로 기존 사람을 찾아 자동완성 후보를 돌려준다(이름 입력 드롭다운용).
+ *  정렬: 정확일치 > 시작일치 > 부분일치, 동점은 가나다순. 빈 질의면 빈 배열. */
+export function matchPersonsByName(
+  persons: Person[],
+  query: string,
+  limit = 6,
+): Person[] {
+  const q = query.trim().toLowerCase();
+  if (!q) return [];
+  return persons
+    .map((p) => {
+      const n = p.displayName.trim().toLowerCase();
+      const score = n === q ? 3 : n.startsWith(q) ? 2 : n.includes(q) ? 1 : 0;
+      return { p, score };
+    })
+    .filter((x) => x.score > 0)
+    .sort((a, b) => b.score - a.score || a.p.displayName.localeCompare(b.p.displayName, 'ko'))
+    .slice(0, limit)
+    .map((x) => x.p);
+}
+
 export function entryHint(
   records: LedgerRecord[],
   persons: Person[],

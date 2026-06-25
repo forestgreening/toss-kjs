@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { suggestAmount, entryHint } from '../../src/domain/hint';
+import { suggestAmount, entryHint, matchPersonsByName } from '../../src/domain/hint';
 import type { LedgerRecord, Person } from '../../src/domain/models';
 
 function person(over: Partial<Person> & { id: string; displayName: string }): Person {
@@ -109,5 +109,38 @@ describe('entryHint — 입력 순간 인라인 힌트', () => {
     expect(h).not.toBeNull();
     expect(h!.suggested).toBeNull();
     expect(h!.net).toBe(-50000);
+  });
+});
+
+describe('matchPersonsByName — 이름 자동완성', () => {
+  const persons: Person[] = [
+    person({ id: 'p1', displayName: '김철수' }),
+    person({ id: 'p2', displayName: '김영희' }),
+    person({ id: 'p3', displayName: '이철수' }),
+    person({ id: 'p4', displayName: '박민수' }),
+  ];
+
+  it('부분 일치하는 사람을 모두 반환', () => {
+    const r = matchPersonsByName(persons, '철수');
+    expect(r.map((p) => p.id).sort()).toEqual(['p1', 'p3']);
+  });
+
+  it('빈 질의는 빈 배열', () => {
+    expect(matchPersonsByName(persons, '   ')).toEqual([]);
+  });
+
+  it('정렬: 정확일치 > 시작일치 > 부분일치', () => {
+    const ps: Person[] = [
+      person({ id: 'a', displayName: '김민수' }), // 부분일치(중간 포함)
+      person({ id: 'b', displayName: '민수' }), // 정확일치
+      person({ id: 'c', displayName: '민수진' }), // 시작일치
+    ];
+    const r = matchPersonsByName(ps, '민수');
+    expect(r.map((p) => p.id)).toEqual(['b', 'c', 'a']);
+  });
+
+  it('limit 적용', () => {
+    const many: Person[] = Array.from({ length: 10 }, (_, i) => person({ id: `k${i}`, displayName: `김${i}` }));
+    expect(matchPersonsByName(many, '김', 3)).toHaveLength(3);
   });
 });

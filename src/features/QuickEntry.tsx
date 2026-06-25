@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
 import type { Nav } from '../app/App';
 import { useLedger } from '../app/store';
-import { entryHint } from '../domain/hint';
+import { entryHint, matchPersonsByName } from '../domain/hint';
+import { personLedger } from '../domain/stats';
 import { TopBar } from '../ui/TopBar';
 import { useDialog } from '../ui/Dialog';
 import {
@@ -66,6 +67,20 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
     () => entryHint(records, persons, { name, phoneRaw: phone }),
     [records, persons, name, phone],
   );
+
+  // 이름 자동완성 드롭다운(부분 일치)
+  const [nameFocus, setNameFocus] = useState(false);
+  const [picked, setPicked] = useState(false);
+  const matches = useMemo(() => matchPersonsByName(persons, name, 6), [persons, name]);
+  const showSuggest = nameFocus && !picked && matches.length > 0;
+
+  function pickPerson(p: Person) {
+    setName(p.displayName);
+    if (p.phoneRaw) setPhone(p.phoneRaw);
+    else if (p.phoneE164) setPhone(p.phoneE164);
+    setPicked(true);
+    setNameFocus(false);
+  }
 
   const amountNum = amount ? parseInt(amount, 10) : null;
   const canSave =
@@ -193,9 +208,43 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
 
         <div className="card" style={{ marginTop: 12 }}>
           <label className="lbl" style={{ marginTop: 0 }}>이름</label>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <input className="field" style={{ flex: 1 }} placeholder="이름 (필수)" value={name} onChange={(e) => setName(e.target.value)} autoFocus />
+          <div style={{ display: 'flex', gap: 8, position: 'relative' }}>
+            <input
+              className="field"
+              style={{ flex: 1 }}
+              placeholder="이름 (필수)"
+              value={name}
+              autoComplete="off"
+              onChange={(e) => { setName(e.target.value); setPicked(false); }}
+              onFocus={() => setNameFocus(true)}
+              onBlur={() => setTimeout(() => setNameFocus(false), 150)}
+              autoFocus
+            />
             {contactsSupported() && <button className="ghost" onClick={onPickContact}>연락처</button>}
+            {showSuggest && (
+              <div className="suggest" onMouseDown={(e) => e.preventDefault()}>
+                {matches.map((p) => {
+                  const l = personLedger(records, p.id);
+                  const sub = [p.note, p.phoneRaw].filter(Boolean).join(' · ');
+                  return (
+                    <div key={p.id} className="suggest-item" {...rowButton(() => pickPerson(p))}>
+                      <div style={{ minWidth: 0 }}>
+                        <b style={{ fontSize: 14.5 }}>{p.displayName}</b>
+                        {sub && <div className="muted" style={{ fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub}</div>}
+                      </div>
+                      {(l.receivedSum > 0 || l.givenSum > 0) && (
+                        <span className={l.net >= 0 ? 'net-pos' : 'net-neg'} style={{ fontSize: 13, whiteSpace: 'nowrap' }}>
+                          {l.net >= 0 ? '+' : ''}{formatKRW(l.net)}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+                <div className="muted" style={{ fontSize: 12, padding: '8px 12px', borderTop: '1px solid var(--line)' }}>
+                  찾는 분이 없으면 그대로 적고 저장하면 새로 추가돼요.
+                </div>
+              </div>
+            )}
           </div>
           <label className="lbl">전화번호 <span className="muted" style={{ fontSize: 12 }}>(선택 — 같은 사람 자동 정리)</span></label>
           <input className="field" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
