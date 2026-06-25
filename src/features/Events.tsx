@@ -42,8 +42,8 @@ export function Events({ nav, back, home }: { nav: Nav; back: () => void; home: 
       <div className="content" style={{ paddingBottom: 90 }}>
         {!creating && (
           <div className="muted" style={{ margin: '0 4px 12px' }}>
-            내 경조사(결혼·돌·장례 등)에서 <b>받은 내역</b>을 정산해요.
-            <br />남에게 낸 건 홈의 <b>기록 추가</b>로 바로 기록하세요.
+            내 결혼·돌, 가족 장례처럼 <b>받은 마음이 모이는 경조사</b>예요.
+            <br />남에게 보낸 건 홈의 <b>기록 추가</b>로 적으면 돼요.
           </div>
         )}
 
