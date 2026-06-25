@@ -65,11 +65,20 @@ export function entryHint(
   persons: Person[],
   q: { name: string; phoneRaw?: string | null },
 ): EntryHint | null {
-  const phoneE164 = normalizePhone(q.phoneRaw);
-  let person = phoneE164 ? persons.find((p) => p.phoneE164 === phoneE164) : undefined;
-  if (!person) {
+  // 입력 상태와 동기화: 전화번호가 입력돼 있으면 "그 번호의 사람"만 매칭한다.
+  //  - 다른 번호(동명이인)나 아직 미완성 번호면 이름으로 폴백하지 않고 숨김 → 잘못된 힌트 방지.
+  //  - 전화번호가 비어 있을 때만 이름 정확 일치로 매칭.
+  const phoneRaw = q.phoneRaw?.trim() ?? '';
+  let person: Person | undefined;
+  if (phoneRaw !== '') {
+    const phoneE164 = normalizePhone(phoneRaw);
+    if (!phoneE164) return null; // 미완성/유효하지 않은 번호 입력 중 → 표시 안 함
+    person = persons.find((p) => p.phoneE164 === phoneE164);
+    if (!person) return null; // 일치하는 사람 없음(다른 사람) → 표시 안 함
+  } else {
     const n = q.name.trim();
-    if (n) person = persons.find((p) => p.displayName.trim() === n);
+    if (!n) return null;
+    person = persons.find((p) => p.displayName.trim() === n);
   }
   if (!person) return null;
 

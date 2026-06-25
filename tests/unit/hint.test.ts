@@ -103,6 +103,22 @@ describe('entryHint — 입력 순간 인라인 힌트', () => {
     expect(h).toBeNull();
   });
 
+  it('동명이인: 이름은 같지만 다른 번호를 입력하면 이름 폴백 없이 숨김', () => {
+    // p1(김철수, +821012345678)에 기록이 있음. 같은 이름·다른 번호로 입력.
+    const h = entryHint(records, persons, { name: '김철수', phoneRaw: '010-9999-9999' });
+    expect(h).toBeNull(); // 다른 사람 → 기존 김철수 힌트가 새어나오면 안 됨
+  });
+
+  it('전화 입력이 미완성(정규화 불가)이면 이름 폴백 없이 숨김', () => {
+    const h = entryHint(records, persons, { name: '김철수', phoneRaw: '010' });
+    expect(h).toBeNull();
+  });
+
+  it('이름+정확한 번호가 모두 일치하면 표시', () => {
+    const h = entryHint(records, persons, { name: '김철수', phoneRaw: '+82 10-1234-5678' });
+    expect(h?.personId).toBe('p1');
+  });
+
   it('받은 적 없으면(GIVEN만) suggested는 null이지만 힌트는 표시', () => {
     const recs: LedgerRecord[] = [rec({ id: 'g', personId: 'p2', direction: 'GIVEN', amount: 50000, date: 1 })];
     const h = entryHint(recs, persons, { name: '이영희' });
