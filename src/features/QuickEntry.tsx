@@ -71,6 +71,8 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
   // 이름 자동완성 드롭다운(부분 일치)
   const [nameFocus, setNameFocus] = useState(false);
   const [picked, setPicked] = useState(false);
+  // 드롭다운에서 고른 사람 id — 저장 시 재해소(SUGGEST) 없이 이 사람에 바로 붙인다.
+  const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null);
   const matches = useMemo(() => matchPersonsByName(persons, name, 6), [persons, name]);
   const showSuggest = nameFocus && !picked && matches.length > 0;
 
@@ -78,6 +80,7 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
     setName(p.displayName);
     if (p.phoneRaw) setPhone(p.phoneRaw);
     else if (p.phoneE164) setPhone(p.phoneE164);
+    setSelectedPersonId(p.id);
     setPicked(true);
     setNameFocus(false);
   }
@@ -169,10 +172,18 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
     setName('');
     setPhone('');
     setNote('');
+    setPicked(false);
+    setSelectedPersonId(null);
     // occasion은 유지(같은 경조사 연속 입력 편의)
   }
 
   async function onSave() {
+    // 드롭다운에서 사람을 골랐으면(이름 미변경) 재해소 없이 그 사람에 바로 저장 — "이미 있는 사람?" 재질문 방지.
+    if (picked && selectedPersonId) {
+      await confirmMergeAndSave(selectedPersonId, buildInput());
+      await afterSave();
+      return;
+    }
     const res = await addEntry(buildInput());
     if (res.kind === 'NEEDS_MERGE_DECISION') {
       setPending({ candidates: res.candidates, input: res.pending });
@@ -215,7 +226,7 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
               placeholder="이름 (필수)"
               value={name}
               autoComplete="off"
-              onChange={(e) => { setName(e.target.value); setPicked(false); }}
+              onChange={(e) => { setName(e.target.value); setPicked(false); setSelectedPersonId(null); }}
               onFocus={() => setNameFocus(true)}
               onBlur={() => setTimeout(() => setNameFocus(false), 150)}
               autoFocus
