@@ -71,7 +71,7 @@ export function PersonDetail({ back, home, id }: { back: () => void; home: () =>
             <label className="lbl" style={{ marginTop: 0 }}>이름</label>
             <input className="field" value={editName} onChange={(e) => setEditName(e.target.value)} />
             <label className="lbl">전화번호</label>
-            <input className="field" inputMode="tel" placeholder="010-0000-0000" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} />
+            <input className="field" inputMode="tel" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} />
             <label className="lbl">메모</label>
             <input className="field" placeholder="예) 엄마의 작은할머니" value={editNote} onChange={(e) => setEditNote(e.target.value)} />
             <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>

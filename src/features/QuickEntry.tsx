@@ -235,7 +235,7 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
             {contactsSupported() && <button className="ghost" onClick={onPickContact}>연락처</button>}
           </div>
           <label className="lbl">전화번호 (선택 — 같은 사람 자동 정리)</label>
-          <input className="field" inputMode="tel" placeholder="010-0000-0000" value={phone} onChange={(e) => setPhone(e.target.value)} />
+          <input className="field" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
           <label className="lbl">메모 (선택)</label>
           <input className="field" placeholder="예) 엄마의 작은할머니" value={note} onChange={(e) => setNote(e.target.value)} />
           <label className="lbl">날짜</label>
