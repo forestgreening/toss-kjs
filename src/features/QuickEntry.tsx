@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import type { Nav } from '../app/App';
 import { useLedger } from '../app/store';
+import { entryHint } from '../domain/hint';
 import { TopBar } from '../ui/TopBar';
 import { useDialog } from '../ui/Dialog';
 import {
@@ -25,7 +26,7 @@ const CHIPS = [50000, 100000, 200000, 300000, 500000];
 const OCCASIONS = ['결혼식', '장례식', '돌잔치', '집들이', '생일'];
 
 export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () => void; home: () => void; eventId?: string }) {
-  const { events, reload } = useLedger();
+  const { events, persons, records, reload } = useLedger();
   const { alert } = useDialog();
   const fixedEvent = eventId ? events.find((e) => e.id === eventId) : undefined;
   const lockedToEvent = Boolean(eventId);
@@ -59,6 +60,12 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
   const [tcDone, setTcDone] = useState(false);
   const [tcLoading, setTcLoading] = useState(false);
   const [tcError, setTcError] = useState('');
+
+  // 입력 중인 이름/전화에 매칭되는 기존 사람의 평생 요약 + 적정금액(있으면)
+  const hint = useMemo(
+    () => entryHint(records, persons, { name, phoneRaw: phone }),
+    [records, persons, name, phone],
+  );
 
   const amountNum = amount ? parseInt(amount, 10) : null;
   const canSave =
@@ -185,6 +192,36 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
         </div>
 
         <div className="card" style={{ marginTop: 12 }}>
+          {hint && (
+            <div
+              style={{
+                background: 'var(--blue-weak)',
+                borderRadius: 12,
+                padding: '10px 12px',
+                marginBottom: 12,
+                fontSize: 13,
+                color: '#3b4757',
+              }}
+            >
+              <div style={{ lineHeight: 1.5 }}>
+                <b>{hint.displayName}</b>님과 평생{' '}
+                <b style={{ color: hint.net >= 0 ? 'var(--blue)' : '#e5484d' }}>
+                  {hint.net >= 0 ? '+' : ''}{formatKRW(hint.net)}
+                </b>{' '}
+                <span className="muted">(받은 {formatKRW(hint.receivedSum)} · 보낸 {formatKRW(hint.givenSum)})</span>
+              </div>
+              {hint.suggested != null && entryType === 'money' && (
+                <button
+                  className="chip"
+                  style={{ marginTop: 8 }}
+                  onClick={() => setAmount(String(hint.suggested))}
+                >
+                  적정 금액 {formatKRW(hint.suggested)} 넣기
+                </button>
+              )}
+            </div>
+          )}
+
           <div className="seg" style={{ marginBottom: 14 }}>
             <button className={entryType === 'money' ? 'on' : ''} onClick={() => setEntryType('money')}>금액</button>
             <button className={entryType === 'gift' ? 'on' : ''} onClick={() => setEntryType('gift')}>선물</button>
