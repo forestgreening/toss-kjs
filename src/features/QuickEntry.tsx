@@ -192,13 +192,21 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
         </div>
 
         <div className="card" style={{ marginTop: 12 }}>
+          <label className="lbl" style={{ marginTop: 0 }}>이름</label>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <input className="field" style={{ flex: 1 }} placeholder="이름 (필수)" value={name} onChange={(e) => setName(e.target.value)} autoFocus />
+            {contactsSupported() && <button className="ghost" onClick={onPickContact}>연락처</button>}
+          </div>
+          <label className="lbl">전화번호 <span className="muted" style={{ fontSize: 12 }}>(선택 — 같은 사람 자동 정리)</span></label>
+          <input className="field" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
+
           {hint && (
             <div
               style={{
                 background: 'var(--blue-weak)',
                 borderRadius: 12,
                 padding: '10px 12px',
-                marginBottom: 12,
+                margin: '12px 0 0',
                 fontSize: 13,
                 color: '#3b4757',
               }}
@@ -222,7 +230,9 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
             </div>
           )}
 
-          <div className="seg" style={{ marginBottom: 14 }}>
+          {/* 힌트 없을 땐 '누구'(이름·전화)와 '얼마'(금액) 블록을 구분선으로 분리 */}
+          {!hint && <div style={{ borderTop: '1px solid var(--line)', marginTop: 16 }} />}
+          <div className="seg" style={{ margin: hint ? '10px 0 14px' : '12px 0 14px' }}>
             <button className={entryType === 'money' ? 'on' : ''} onClick={() => setEntryType('money')}>금액</button>
             <button className={entryType === 'gift' ? 'on' : ''} onClick={() => setEntryType('gift')}>선물</button>
           </div>
@@ -235,7 +245,6 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
                 placeholder="0"
                 value={amount ? Number(amount).toLocaleString('ko-KR') : ''}
                 onChange={(e) => setAmount(e.target.value.replace(/[^\d]/g, ''))}
-                autoFocus
               />
               <div className="chips">
                 {CHIPS.map((c) => (
@@ -253,7 +262,6 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
                 placeholder="선물 (예: 배냇저고리, 기저귀 세트)"
                 value={giftName}
                 onChange={(e) => setGiftName(e.target.value)}
-                autoFocus
               />
               <label className="lbl">추정 금액 (선택)</label>
               <input
@@ -266,13 +274,6 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
             </>
           )}
 
-          <label className="lbl">이름</label>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <input className="field" style={{ flex: 1 }} placeholder="이름 (필수)" value={name} onChange={(e) => setName(e.target.value)} />
-            {contactsSupported() && <button className="ghost" onClick={onPickContact}>연락처</button>}
-          </div>
-          <label className="lbl">전화번호 (선택 — 같은 사람 자동 정리)</label>
-          <input className="field" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
           <label className="lbl">메모 (선택)</label>
           <input className="field" placeholder="예) 엄마의 작은할머니" value={note} onChange={(e) => setNote(e.target.value)} />
           <label className="lbl">날짜</label>
