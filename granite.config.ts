@@ -10,8 +10,8 @@ export default defineConfig({
   appName: 'maeumjangbu',
 
   brand: {
-    // 콘솔에 등록한 노출명과 동일해야 한다.
-    displayName: '마음장부',
+    // 콘솔에 등록한 노출명과 글자 단위로 동일해야 한다(띄어쓰기 포함, 불일치 시 반려).
+    displayName: '경조사 마음장부',
     // 앱 hero/포인트 컬러(styles.css --blue).
     primaryColor: '#3182F6',
     // TODO(콘솔): 콘솔에 업로드한 앱 로고 이미지 URL로 교체.
