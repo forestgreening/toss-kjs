@@ -86,8 +86,9 @@ button.ghost:active { background: #f7f8f9; }
 
 /* FAB (하단 고정 액션바) — transform 대신 margin auto로 중앙정렬(:active scale과 충돌 없음) */
 .fab { position: fixed; left: 0; right: 0; bottom: 20px; margin: 0 auto; max-width: 448px; width: calc(100% - 32px); z-index: 20; }
-/* 떠 있는 액션바 뒤로 스크롤된 콘텐츠가 비쳐 보이지 않도록 하단 페이드 스크림 */
-.fab::before { content: ''; position: fixed; left: 0; right: 0; bottom: 0; height: 104px; background: linear-gradient(to top, var(--bg) 58%, rgba(244, 245, 246, 0)); z-index: -1; pointer-events: none; }
+/* 떠 있는 액션바 뒤로 스크롤된 콘텐츠가 비쳐 보이지 않도록 하단 페이드 스크림.
+   .fab 자체가 버튼인 경우(홈 기록추가)는 스크림이 버튼 배경을 덮으므로 제외 → 컨테이너 .fab에만. */
+.fab:not(button)::before { content: ''; position: fixed; left: 0; right: 0; bottom: 0; height: 104px; background: linear-gradient(to top, var(--bg) 58%, rgba(244, 245, 246, 0)); z-index: -1; pointer-events: none; }
 
 /* Segmented */
 .seg { display: flex; background: var(--bg); border-radius: 12px; padding: 4px; }
