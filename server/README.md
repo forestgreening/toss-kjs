@@ -69,3 +69,4 @@ key   = 로그인 시 userKey, 아니면 deviceKey(getAnonymousKey hash)
 - 서버 저장물은 **AES-256-GCM 암호문**뿐이다. 이름·전화·금액 등 제3자 평문은 존재하지 않는다(테스트로 검증: `tests/unit/cloud-backup.test.ts`).
 - 패스프레이즈 분실 = **복구 불가**(E2E의 본질). 앱 UI에서 명확히 경고한다.
 - `key` 안정성(기기변경/재설치 시 동일성)은 토스가 공식 보장하지 않음 → Phase 0 실측 대상(`src/poc/decision.ts`). 로그인 후 `userKey`가 가장 안정적인 복원 키.
+- ⚠️ **운영 시 per-user 인가 필수**: 이 참조 서버의 `/backup/:key`는 클라이언트가 보낸 key를 그대로 신뢰한다(단일 공유 `AUTH_TOKEN`만 선택). 운영 서버는 **인증 세션에서 userKey를 도출**해 caller와 key를 묶어야 한다 — 그래야 타인의 userKey로 암호문을 덮어쓰거나(`PUT`) 가져가는(`GET`) 것을 막는다. 내용은 E2E 암호화돼 읽히지 않지만, 위치 특정·삭제/덮어쓰기는 인가로 차단해야 한다.

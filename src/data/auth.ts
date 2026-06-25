@@ -14,6 +14,16 @@ export class AuthError extends Error {
 
 export type FetchLike = (url: string, init?: RequestInit) => Promise<Response>;
 
+const REQUEST_TIMEOUT_MS = 20_000; // 모바일 WebView에서 무한 대기 방지(토스 2-홉 교환이라 특히 중요)
+
+function timeoutSignal(ms: number): AbortSignal | undefined {
+  try {
+    return AbortSignal.timeout?.(ms);
+  } catch {
+    return undefined;
+  }
+}
+
 /**
  * authorizationCode를 우리 서버에 보내 userKey로 교환한다.
  * 와이어 규약(server): POST {baseUrl}/auth/login  body={authorizationCode,referrer} → 200 {userKey}
@@ -30,7 +40,9 @@ export async function exchangeAuthCode(
     res = await fetchImpl(`${base}/auth/login`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(login),
+      // SDK 반환 형태와 와이어 바디를 분리(미래에 PII 필드가 붙어도 서버로 새지 않도록).
+      body: JSON.stringify({ authorizationCode: login.authorizationCode, referrer: login.referrer }),
+      signal: timeoutSignal(REQUEST_TIMEOUT_MS),
     });
   } catch (e) {
     throw new AuthError(`서버에 연결하지 못했어요(${e instanceof Error ? e.message : String(e)}).`);

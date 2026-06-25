@@ -23,7 +23,12 @@ let creds = null;
 function mtls() {
   if (creds) return creds;
   if (!CERT_PATH || !KEY_PATH) return null;
-  creds = { cert: readFileSync(CERT_PATH), key: readFileSync(KEY_PATH) };
+  try {
+    creds = { cert: readFileSync(CERT_PATH), key: readFileSync(KEY_PATH) };
+  } catch (e) {
+    // "Toss 거부"와 "인증서 경로 오류"를 구분 가능하게(운영 로그용).
+    throw new Error(`mTLS 인증서/키를 읽을 수 없어요 (${CERT_PATH} / ${KEY_PATH}): ${e.message}`);
+  }
   return creds;
 }
 
@@ -69,6 +74,7 @@ function tossRequest({ method, path, headers = {}, body }) {
       },
     );
     req.on('error', reject);
+    req.setTimeout(15_000, () => req.destroy(new Error('toss request timeout')));
     if (payload) req.write(payload);
     req.end();
   });
@@ -81,8 +87,9 @@ export async function loginToUserKey({ authorizationCode, referrer }) {
     path: GENERATE_TOKEN,
     body: { authorizationCode, referrer },
   });
-  if (gen.status < 200 || gen.status >= 300 || !gen.json?.accessToken) {
-    throw new Error(`generate-token failed (HTTP ${gen.status})`);
+  if (gen.status < 200 || gen.status >= 300 || typeof gen.json?.accessToken !== 'string') {
+    const nonJson = gen.json?.raw != null ? ', non-JSON body' : '';
+    throw new Error(`generate-token failed (HTTP ${gen.status}${nonJson})`);
   }
   const me = await tossRequest({
     method: 'GET',
@@ -90,7 +97,8 @@ export async function loginToUserKey({ authorizationCode, referrer }) {
     headers: { authorization: `Bearer ${gen.json.accessToken}` },
   });
   if (me.status < 200 || me.status >= 300 || me.json?.userKey == null) {
-    throw new Error(`login-me failed (HTTP ${me.status})`);
+    const nonJson = me.json?.raw != null ? ', non-JSON body' : '';
+    throw new Error(`login-me failed (HTTP ${me.status}${nonJson})`);
   }
   return { userKey: me.json.userKey };
 }

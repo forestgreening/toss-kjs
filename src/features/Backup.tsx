@@ -22,6 +22,9 @@ async function peekKeySource(): Promise<KeySource> {
   return (await getDeviceKey()) ? 'device' : 'local';
 }
 
+// ⚠️ 보안: 여기서 만든 key를 클라이언트가 직접 blob 식별자로 서버에 보낸다(참조 서버는 신뢰).
+//    운영 서버는 client-supplied key를 그대로 믿지 말고, 인증 세션에서 userKey를 도출해
+//    per-user 인가를 강제해야 한다(타인 userKey로 PUT/GET 방지). server/README 참고.
 /** 백업 식별자: userKey > 토스 익명 키 > 기기 로컬 랜덤 키(브라우저/실험용). */
 async function resolveCloudKey(): Promise<{ key: string; source: KeySource }> {
   const userKey = localStorage.getItem(USERKEY_KEY);
