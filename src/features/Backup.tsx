@@ -4,6 +4,9 @@ import { TopBar } from '../ui/TopBar';
 import { useDialog } from '../ui/Dialog';
 import { exportDataset, replaceAll } from '../data/backupStore';
 import { exportData, importData } from '../domain/backup';
+import { exportLedgerCsv, importLedgerCsvAppend } from '../data/csvService';
+import { csvTemplate } from '../domain/csv';
+import { newId } from '../lib/id';
 import { backupToCloud, restoreFromCloud, type CloudConfig } from '../data/cloud-backup';
 import { getDeviceKey, requestAppLogin } from '../platform/identity';
 import { exchangeAuthCode } from '../data/auth';
@@ -188,6 +191,47 @@ export function Backup({ back, home }: { back: () => void; home: () => void }) {
     }
   }
 
+  function downloadText(filename: string, text: string, mime: string, bom = false) {
+    const blob = new Blob(bom ? ['﻿', text] : [text], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function onCsvTemplate() {
+    // 엑셀에서 한글이 안 깨지도록 UTF-8 BOM 포함
+    downloadText('마음장부-양식.csv', csvTemplate(), 'text/csv;charset=utf-8', true);
+    setMsg('양식 파일을 저장했어요. 엑셀에서 채운 뒤 "가져오기" 하세요.');
+  }
+
+  async function onCsvExport() {
+    const text = await exportLedgerCsv();
+    downloadText(`마음장부-${new Date().toISOString().slice(0, 10)}.csv`, text, 'text/csv;charset=utf-8', true);
+    setMsg('엑셀(CSV) 파일을 저장했어요.');
+  }
+
+  async function onCsvImport(e: React.ChangeEvent<HTMLInputElement>) {
+    const input = e.target;
+    const f = input.files?.[0];
+    if (!f) return;
+    try {
+      const summary = await importLedgerCsvAppend(await f.text(), Date.now(), newId);
+      await reload();
+      const errPart =
+        summary.errors.length > 0
+          ? ` (오류 ${summary.errors.length}행 건너뜀: ${summary.errors.slice(0, 3).map((x) => `${x.line}행`).join(', ')}${summary.errors.length > 3 ? ' 등' : ''})`
+          : '';
+      setMsg(`${summary.added}건 가져왔어요.${errPart}`);
+    } catch {
+      setMsg('CSV 파일을 읽지 못했어요. 양식과 인코딩(UTF-8)을 확인해 주세요.');
+    } finally {
+      input.value = '';
+    }
+  }
+
   return (
     <>
       <TopBar title="백업 / 복원" onBack={back} onHome={home} />
@@ -209,6 +253,22 @@ export function Backup({ back, home }: { back: () => void; home: () => void }) {
             백업 파일 불러오기
             <input type="file" accept="application/json" onChange={onImport} style={{ display: 'none' }} />
           </label>
+        </div>
+
+        <div className="card">
+          <b>엑셀(CSV)로 가져오기 / 내보내기</b>
+          <p className="muted" style={{ margin: '6px 0 12px' }}>
+            엑셀·구글시트로 정리한 <b>이전 경조사 내역</b>을 한 번에 가져올 수 있어요(기존 데이터에 추가).
+            처음 쓰신다면 <b>양식 받기</b>로 빈 양식을 받아 채운 뒤 가져오세요.
+          </p>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="ghost" style={{ flex: 1 }} onClick={onCsvTemplate}>양식 받기</button>
+            <button className="ghost" style={{ flex: 1 }} onClick={onCsvExport}>내보내기</button>
+            <label className="primary" style={{ flex: 1, textAlign: 'center', cursor: 'pointer', lineHeight: '1.2' }}>
+              가져오기
+              <input type="file" accept=".csv,text/csv,text/plain" onChange={onCsvImport} style={{ display: 'none' }} />
+            </label>
+          </div>
         </div>
 
         {msg && <div className="card" style={{ color: 'var(--blue)' }}>{msg}</div>}
