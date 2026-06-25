@@ -51,14 +51,14 @@
 
 1. **콘솔 등록 + 업로드(최우선, 사용자 작업)** — 앱인토스 콘솔에서 앱 생성(카테고리=생활/유틸리티) → 로고 업로드 → `granite.config.ts`의 `appName`·`brand.icon`·`brand.displayName`을 콘솔 값으로 교체 → `npx ait token add`(토큰) → `npm run bundle:deploy`(=`ait deploy`) 또는 콘솔에 `maeumjangbu.ait` 업로드 → QR로 토스 앱 테스트 → 검토요청. 전 절차 [`docs/DEPLOY-TOSS.md`](./docs/DEPLOY-TOSS.md).
 2. **Phase 0 샌드박스 실측(병렬)** — `poc/` 측정 하니스를 토스에 올려 §6 3가지 실측 → `src/poc/decision.ts`(`evaluatePhase0`)로 go/no-go.
-3. **여유분**: appLogin→userKey 토큰교환 서버 + E2E 클라우드 백업 연동(domain/crypto.ts는 구현 완료, server/UI 미연동), 광고(IAA — 초기 진입 수익으로 재평가됨, 부고 제외).
+3. **여유분(일부 완료)**: ✅ E2E 암호화 클라우드 백업 **코드 연동 완료** — `data/cloud-backup.ts`(주입형 fetch·타임아웃) + `server/`(의존성 없는 참조 서버) + 백업화면 UI. 남은 건 **서버 호스팅**(사용자)과 키 안정성(Phase 0/로그인 의존). ⏳ appLogin→userKey 토큰교환 서버, 광고(IAA — 부고 제외).
 
 > 코드 래핑 산출물: 루트 `granite.config.ts`, `src/platform/{sdk,env,contacts,identity}.ts`(SDK는 동적 import라 브라우저 빌드 비포함·토스에서만 lazy 로드), `QuickEntry`의 토스 연락처 선택 바텀시트.
 
 ### 앱 구조
 - `src/domain/` 순수 로직(models·phone·merge·stats·hint·backup·crypto), `src/data/` Dexie 저장소·서비스(ledgerService·personOps·erase·backupStore·seed), `src/features/` 화면, `src/ui/` styles·format·TopBar, `src/app/` App·store.
 - `poc/` 토스 측정 하니스(별도, 루트 빌드 외).
-- UI/UX 리뷰 미반영 잔여(출품 비필수): confirm/alert→인앱모달 전면화, 성능 메모이제이션, 일부 행 시맨틱 button화.
+- ✅ confirm/alert → 인앱 다이얼로그(`ui/Dialog.tsx`) 전면화 완료. 잔여(출품 비필수): 성능 메모이제이션, 일부 행 시맨틱 button화.
 
 ## 8. 기술 스택 (예정)
 
