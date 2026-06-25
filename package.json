@@ -8,6 +8,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "bundle": "ait build",
+    "bundle:deploy": "ait deploy",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
@@ -22,6 +24,7 @@
     "vitest": "^2.1.8"
   },
   "dependencies": {
+    "@apps-in-toss/web-framework": "^2.9.3",
     "dexie": "^4.4.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"

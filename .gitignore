@@ -10,6 +10,10 @@ node_modules/
 dist/
 *.log
 
+# 앱인토스 번들 빌드 산출물/캐시 (ait build) — 저장소에 미포함
+*.ait
+.granite/
+
 # 디자인 소스(목업 zip 등) — 저장소에 미포함
 *.zip
 

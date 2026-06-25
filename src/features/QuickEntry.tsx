@@ -8,7 +8,13 @@ import {
   saveAsNewPerson,
   type NewEntryInput,
 } from '../data/ledgerService';
-import { pickContact, contactsSupported } from '../platform/contacts';
+import {
+  pickContact,
+  contactsSupported,
+  usesTossContactList,
+  fetchTossContacts,
+  type TossContactsPage,
+} from '../platform/contacts';
 import { newId } from '../lib/id';
 import { formatMan, formatKRW, toDateInputValue, fromDateInputValue } from '../ui/format';
 import type { Direction, Person, OwnerSide } from '../domain/models';
@@ -42,12 +48,26 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
   const [pending, setPending] = useState<{ candidates: Person[]; input: NewEntryInput } | null>(null);
   const [savedCount, setSavedCount] = useState(0);
 
+  // 토스 연락처 선택 바텀시트 상태
+  const [tcOpen, setTcOpen] = useState(false);
+  const [tcQuery, setTcQuery] = useState('');
+  const [tcItems, setTcItems] = useState<TossContactsPage['result']>([]);
+  const [tcOffset, setTcOffset] = useState(0);
+  const [tcDone, setTcDone] = useState(false);
+  const [tcLoading, setTcLoading] = useState(false);
+  const [tcError, setTcError] = useState('');
+
   const amountNum = amount ? parseInt(amount, 10) : null;
   const canSave =
     name.trim().length > 0 &&
     (entryType === 'money' ? amountNum !== null && amountNum > 0 : giftName.trim().length > 0);
 
   async function onPickContact() {
+    // 토스 WebView: 자체 목록·검색 바텀시트. 그 외: 웹 단일 picker.
+    if (usesTossContactList()) {
+      openTossPicker();
+      return;
+    }
     try {
       const c = await pickContact();
       if (c) {
@@ -57,6 +77,44 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
     } catch (e) {
       alert(e instanceof Error ? e.message : String(e));
     }
+  }
+
+  const TC_PAGE = 30;
+
+  async function loadTossPage(reset: boolean, contains: string) {
+    setTcLoading(true);
+    setTcError('');
+    try {
+      const offset = reset ? 0 : tcOffset;
+      const page = await fetchTossContacts({
+        size: TC_PAGE,
+        offset,
+        contains: contains.trim() || undefined,
+      });
+      setTcItems((prev) => (reset ? page.result : [...prev, ...page.result]));
+      setTcOffset(page.nextOffset ?? offset + page.result.length);
+      setTcDone(page.done || page.nextOffset == null);
+    } catch (e) {
+      setTcError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setTcLoading(false);
+    }
+  }
+
+  function openTossPicker() {
+    setTcOpen(true);
+    setTcQuery('');
+    setTcItems([]);
+    setTcOffset(0);
+    setTcDone(false);
+    setTcError('');
+    void loadTossPage(true, '');
+  }
+
+  function chooseTossContact(cName: string, phoneNumber: string) {
+    if (cName) setName(cName);
+    if (phoneNumber) setPhone(phoneNumber);
+    setTcOpen(false);
   }
 
   function buildInput(): NewEntryInput {
@@ -229,6 +287,58 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
           ))}
           <button className="ghost" style={{ width: '100%', marginTop: 10 }} onClick={resolveNew}>다른 사람으로 추가</button>
         </div>
+      )}
+
+      {tcOpen && (
+        <>
+          <div
+            onClick={() => setTcOpen(false)}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.3)', zIndex: 25 }}
+          />
+          <div
+            className="card"
+            style={{ position: 'fixed', left: '50%', transform: 'translateX(-50%)', bottom: 16, width: 'calc(100% - 32px)', maxWidth: 448, zIndex: 26, boxShadow: '0 8px 24px rgba(0,0,0,.14)', maxHeight: '72vh', display: 'flex', flexDirection: 'column' }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <b>연락처 선택</b>
+              <button className="ghost" onClick={() => setTcOpen(false)}>닫기</button>
+            </div>
+            <input
+              className="field"
+              placeholder="이름으로 검색"
+              value={tcQuery}
+              onChange={(e) => {
+                setTcQuery(e.target.value);
+                void loadTossPage(true, e.target.value);
+              }}
+            />
+            <div style={{ overflowY: 'auto', marginTop: 8 }}>
+              {tcItems.map((c, i) => (
+                <div key={`${c.phoneNumber}-${i}`} className="list-item" onClick={() => chooseTossContact(c.name, c.phoneNumber)}>
+                  <div>
+                    <b>{c.name || '이름 없음'}</b>
+                    <div className="muted">{c.phoneNumber}</div>
+                  </div>
+                  <span className="muted">선택 ›</span>
+                </div>
+              ))}
+              {tcLoading && tcItems.length === 0 && (
+                <div className="muted" style={{ textAlign: 'center', padding: '12px 0' }}>불러오는 중…</div>
+              )}
+              {!tcLoading && tcItems.length === 0 && !tcError && (
+                <div className="muted" style={{ textAlign: 'center', padding: '12px 0' }}>연락처가 없어요</div>
+              )}
+              {tcError && (
+                <div className="muted" style={{ color: 'var(--red, #e5484d)', padding: '8px 0' }}>{tcError}</div>
+              )}
+              {!tcDone && tcItems.length > 0 && (
+                <button className="ghost" style={{ width: '100%', marginTop: 8 }} disabled={tcLoading} onClick={() => void loadTossPage(false, tcQuery)}>
+                  {tcLoading ? '불러오는 중…' : '더 불러오기'}
+                </button>
+              )}
+            </div>
+          </div>
+        </>
       )}
 
       {!pending && (
