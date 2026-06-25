@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Nav } from '../app/App';
 import { useLedger } from '../app/store';
 import { TopBar } from '../ui/TopBar';
+import { useDialog } from '../ui/Dialog';
 import {
   addEntry,
   confirmMergeAndSave,
@@ -24,6 +25,7 @@ const OCCASIONS = ['결혼식', '장례식', '돌잔치', '집들이', '생일']
 
 export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () => void; home: () => void; eventId?: string }) {
   const { events, reload } = useLedger();
+  const { alert } = useDialog();
   const fixedEvent = eventId ? events.find((e) => e.id === eventId) : undefined;
   const lockedToEvent = Boolean(eventId);
 
@@ -75,7 +77,7 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
         if (c.phone) setPhone(c.phone);
       }
     } catch (e) {
-      alert(e instanceof Error ? e.message : String(e));
+      await alert(e instanceof Error ? e.message : String(e));
     }
   }
 

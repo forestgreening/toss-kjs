@@ -2,14 +2,22 @@ import { useState } from 'react';
 import type { Nav } from '../app/App';
 import { useLedger } from '../app/store';
 import { TopBar } from '../ui/TopBar';
+import { useDialog } from '../ui/Dialog';
 import { wipeAll } from '../data/erase';
 
 export function Settings({ nav, back, home }: { nav: Nav; back: () => void; home: () => void }) {
   const { reload, records, persons, events } = useLedger();
+  const { confirm } = useDialog();
   const [msg, setMsg] = useState('');
 
   async function onWipe() {
-    if (!confirm('모든 데이터를 삭제합니다. 되돌릴 수 없어요. 계속할까요?')) return;
+    const ok = await confirm({
+      title: '전체 데이터 초기화',
+      message: '모든 데이터를 삭제합니다. 되돌릴 수 없어요. 계속할까요?',
+      confirmText: '전체 삭제',
+      danger: true,
+    });
+    if (!ok) return;
     await wipeAll();
     await reload();
     setMsg('전체 초기화 완료.');

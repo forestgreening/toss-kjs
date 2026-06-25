@@ -109,3 +109,14 @@ button.ghost:active { background: #f7f8f9; }
 .net-neg { color: var(--red); font-weight: 700; font-variant-numeric: tabular-nums; }
 .center { text-align: center; color: var(--gray); padding: 40px 0; }
 label.lbl { font-size: 13px; color: var(--gray); display: block; margin: 14px 0 6px; }
+
+/* danger 버튼 (삭제/되돌릴 수 없는 동작) */
+button.danger { width: 100%; padding: 15px; border: 0; border-radius: 14px; background: var(--red); color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 10px 24px -8px rgba(240, 68, 82, .5); }
+button.danger:active { transform: scale(.99); }
+
+/* 인앱 다이얼로그 (confirm/alert 대체) */
+.dialog-scrim { position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 40; display: flex; align-items: center; justify-content: center; padding: 24px; }
+.dialog { background: #fff; border-radius: 18px; padding: 22px 20px 16px; width: 100%; max-width: 360px; box-shadow: 0 16px 40px rgba(0,0,0,.22); }
+.dialog-title { display: block; font-size: 17px; margin-bottom: 8px; }
+.dialog-msg { color: var(--ink); font-size: 15px; line-height: 1.5; white-space: pre-line; margin-bottom: 18px; }
+.dialog-actions { display: flex; gap: 8px; }

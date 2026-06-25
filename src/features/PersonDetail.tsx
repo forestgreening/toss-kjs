@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useLedger } from '../app/store';
 import { TopBar } from '../ui/TopBar';
+import { useDialog } from '../ui/Dialog';
 import { personLedger } from '../domain/stats';
 import { suggestAmount } from '../domain/hint';
 import { deletePerson, deleteRecord } from '../data/erase';
@@ -9,6 +10,7 @@ import { formatKRW, formatValue, formatDate } from '../ui/format';
 
 export function PersonDetail({ back, home, id }: { back: () => void; home: () => void; id: string }) {
   const { persons, records, reload, events } = useLedger();
+  const { confirm } = useDialog();
   const person = persons.find((p) => p.id === id);
   const [mode, setMode] = useState<'view' | 'edit' | 'merge'>('view');
   const [editName, setEditName] = useState('');
@@ -48,7 +50,12 @@ export function PersonDetail({ back, home, id }: { back: () => void; home: () =>
     setMode('view');
   }
   async function doMerge(otherId: string, otherName: string) {
-    if (!confirm(`'${otherName}'님을 '${person!.displayName}'님과 합칠까요?\n'${otherName}'의 기록이 모두 옮겨지고 '${otherName}'은 사라져요.\n(부부로 묶었다면 합친 뒤 이름을 '○○·○○'로 바꿀 수 있어요)`)) return;
+    const ok = await confirm({
+      title: '두 사람 합치기',
+      message: `'${otherName}'님을 '${person!.displayName}'님과 합칠까요?\n'${otherName}'의 기록이 모두 옮겨지고 '${otherName}'은 사라져요.\n(부부로 묶었다면 합친 뒤 이름을 '○○·○○'로 바꿀 수 있어요)`,
+      confirmText: '합치기',
+    });
+    if (!ok) return;
     await mergePeople(id, otherId, Date.now());
     await reload();
     setMode('view');
@@ -151,7 +158,7 @@ export function PersonDetail({ back, home, id }: { back: () => void; home: () =>
                         style={{ color: 'var(--gray)', fontSize: 16 }}
                         aria-label="기록 삭제"
                         onClick={async () => {
-                          if (confirm('이 기록을 지울까요?')) {
+                          if (await confirm({ message: '이 기록을 지울까요?', confirmText: '삭제', danger: true })) {
                             await deleteRecord(r.id);
                             await reload();
                           }
@@ -171,7 +178,12 @@ export function PersonDetail({ back, home, id }: { back: () => void; home: () =>
               className="ghost"
               style={{ width: '100%', color: 'var(--red)', borderColor: '#f7c5c9', marginTop: 8 }}
               onClick={async () => {
-                if (confirm(`${person.displayName} 님과 모든 기록을 지울까요?`)) {
+                if (await confirm({
+                  title: '이 사람 삭제',
+                  message: `${person.displayName} 님과 모든 기록을 지울까요?`,
+                  confirmText: '삭제',
+                  danger: true,
+                })) {
                   await deletePerson(id);
                   await reload();
                   back();

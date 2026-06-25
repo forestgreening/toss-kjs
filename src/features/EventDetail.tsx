@@ -1,6 +1,7 @@
 import type { Nav } from '../app/App';
 import { useLedger } from '../app/store';
 import { TopBar } from '../ui/TopBar';
+import { useDialog } from '../ui/Dialog';
 import { eventStats } from '../domain/stats';
 import { deleteRecord } from '../data/erase';
 import { MonetizationCard } from './MonetizationCard';
@@ -8,6 +9,7 @@ import { formatKRW, formatValue, EVENT_LABEL } from '../ui/format';
 
 export function EventDetail({ nav, back, home, id }: { nav: Nav; back: () => void; home: () => void; id: string }) {
   const { events, records, personMap, reload } = useLedger();
+  const { confirm } = useDialog();
   const ev = events.find((e) => e.id === id);
   if (!ev) {
     return (
@@ -88,7 +90,7 @@ export function EventDetail({ nav, back, home, id }: { nav: Nav; back: () => voi
                       style={{ color: 'var(--gray)', fontSize: 16 }}
                       aria-label="기록 삭제"
                       onClick={async () => {
-                        if (confirm('이 기록을 삭제할까요?')) {
+                        if (await confirm({ message: '이 기록을 삭제할까요?', confirmText: '삭제', danger: true })) {
                           await deleteRecord(r.id);
                           await reload();
                         }
