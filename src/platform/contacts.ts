@@ -30,9 +30,12 @@ export function contactsSupported(): boolean {
   return webContacts() !== null || isTossWebView();
 }
 
-/** 토스 WebView에서 자체 선택 UI(목록·검색)를 써야 하는가. */
+/** 토스 WebView에서 자체 선택 UI(목록·검색)를 써야 하는가.
+ *  토스 WebView는 Chromium 기반이라 navigator.contacts가 "존재하지만" 실제론 열리지 않아
+ *  (DOMException: "Unable to open a contact selector") 웹 Contact Picker를 쓰면 실패한다.
+ *  따라서 토스 안에서는 webContacts 유무와 무관하게 항상 토스 SDK 목록을 사용한다. */
 export function usesTossContactList(): boolean {
-  return isTossWebView() && webContacts() === null;
+  return isTossWebView();
 }
 
 // ── 토스 SDK 연락처 목록 ──
