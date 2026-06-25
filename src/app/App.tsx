@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLedger } from './store';
+import { requestPersistence } from '../platform/storage';
 import { Home } from '../features/Home';
 import { QuickEntry } from '../features/QuickEntry';
 import { Events } from '../features/Events';
@@ -28,6 +29,11 @@ export function App() {
   const back = () => setStack((st) => (st.length > 1 ? st.slice(0, -1) : st));
   const home = () => setStack([{ name: 'home' }]);
   const { ready } = useLedger();
+
+  // 영속 저장 요청(휘발 방지). 1회, 실패해도 앱은 정상 동작.
+  useEffect(() => {
+    void requestPersistence();
+  }, []);
 
   return <div className="app">{ready ? render(screen, nav, back, home) : <div className="center">불러오는 중…</div>}</div>;
 }

@@ -6,6 +6,7 @@ import { exportDataset, replaceAll } from '../data/backupStore';
 import { exportData, importData } from '../domain/backup';
 import { exportLedgerCsv, importLedgerCsvAppend } from '../data/csvService';
 import { csvTemplate } from '../domain/csv';
+import { markBackedUp } from '../data/backupMeta';
 import { newId } from '../lib/id';
 import { backupToCloud, restoreFromCloud, type CloudConfig } from '../data/cloud-backup';
 import { getDeviceKey, requestAppLogin } from '../platform/identity';
@@ -108,6 +109,7 @@ export function Backup({ back, home }: { back: () => void; home: () => void }) {
       const { key } = await resolveCloudKey();
       const config: CloudConfig = { baseUrl: cloudUrl.trim(), key };
       await backupToCloud(config, await exportDataset(), passphrase);
+      markBackedUp();
       setCloudMsg('☁️ 클라우드 백업 완료.');
     } catch (e) {
       setCloudMsg(e instanceof Error ? e.message : String(e));
@@ -159,6 +161,7 @@ export function Backup({ back, home }: { back: () => void; home: () => void }) {
     a.download = `maeumjangbu-backup-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
+    markBackedUp();
     setMsg('백업 파일을 저장했어요.');
   }
 
@@ -210,6 +213,7 @@ export function Backup({ back, home }: { back: () => void; home: () => void }) {
   async function onCsvExport() {
     const text = await exportLedgerCsv();
     downloadText(`마음장부-${new Date().toISOString().slice(0, 10)}.csv`, text, 'text/csv;charset=utf-8', true);
+    markBackedUp();
     setMsg('엑셀(CSV) 파일을 저장했어요.');
   }
 

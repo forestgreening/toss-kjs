@@ -5,6 +5,7 @@ import { formatKRW, formatValue, formatDate } from '../ui/format';
 import { rowButton } from '../ui/rowProps';
 import { AdBanner } from '../ui/AdBanner';
 import { seedSample, isSeedActive, clearSeed } from '../data/seed';
+import { reminderState, getLastBackupAt } from '../data/backupMeta';
 import type { Direction, LedgerRecord } from '../domain/models';
 
 function sum(records: LedgerRecord[], dir: Direction): number {
@@ -39,6 +40,8 @@ export function Home({ nav }: { nav: Nav }) {
     .sort((a, b) => b.date - a.date || b.createdAt - a.createdAt)
     .slice(0, 5);
 
+  const backupReminder = reminderState(getLastBackupAt(), records.filter((r) => !r.deletedAt).length);
+
   const gear = (
     <button className="back" aria-label="설정" onClick={() => nav({ name: 'settings' })}>
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -59,6 +62,26 @@ export function Home({ nav }: { nav: Nav }) {
             <div className="row">
               <span style={{ fontSize: 14 }}>📌 예시 데이터를 둘러보는 중이에요</span>
               <button className="pill" style={{ background: '#fff', border: '1px solid #ffd18a', color: '#9a6a00' }} onClick={onClearSeed}>예시 지우기</button>
+            </div>
+          </div>
+        )}
+
+        {backupReminder.show && (
+          <div
+            className="card"
+            {...rowButton(() => nav({ name: 'backup' }))}
+            style={{
+              background: backupReminder.tone === 'warn' ? '#fff1f0' : 'var(--blue-weak)',
+              boxShadow: 'none',
+              border: backupReminder.tone === 'warn' ? '1px solid #ffccc7' : '1px solid #d6e4ff',
+            }}
+          >
+            <div className="row">
+              <span style={{ fontSize: 13.5, color: '#4b5563', lineHeight: 1.5 }}>
+                {backupReminder.tone === 'warn' ? '⚠️ ' : '💾 '}
+                {backupReminder.text}
+              </span>
+              <span className="pill" style={{ whiteSpace: 'nowrap' }}>백업하기</span>
             </div>
           </div>
         )}
