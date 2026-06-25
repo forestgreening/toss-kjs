@@ -51,6 +51,7 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
   const [dateStr, setDateStr] = useState(toDateInputValue(Date.now()));
   const [toast, setToast] = useState('');
   const [pending, setPending] = useState<{ candidates: Person[]; input: NewEntryInput } | null>(null);
+  const [pendingMemo, setPendingMemo] = useState(''); // 동명이인 새로 추가 시 구분 메모
   const [savedCount, setSavedCount] = useState(0);
 
   // 토스 연락처 선택 바텀시트 상태
@@ -187,6 +188,7 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
     const res = await addEntry(buildInput());
     if (res.kind === 'NEEDS_MERGE_DECISION') {
       setPending({ candidates: res.candidates, input: res.pending });
+      setPendingMemo(res.pending.note?.trim() ?? ''); // 폼에 적은 메모가 있으면 그대로 prefill
       return;
     }
     await afterSave();
@@ -196,13 +198,21 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
     if (!pending) return;
     await confirmMergeAndSave(personId, pending.input);
     setPending(null);
+    setPendingMemo('');
     await afterSave();
   }
   async function resolveNew() {
     if (!pending) return;
-    await saveAsNewPerson(pending.input);
+    const memo = pendingMemo.trim();
+    if (!memo) return; // 동명이인 구분 위해 메모 필수(버튼도 비활성)
+    await saveAsNewPerson({ ...pending.input, note: memo });
     setPending(null);
+    setPendingMemo('');
     await afterSave();
+  }
+  function cancelPending() {
+    setPending(null);
+    setPendingMemo('');
   }
 
   return (
@@ -375,7 +385,7 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
         <div className="card" style={{ position: 'fixed', left: '50%', transform: 'translateX(-50%)', bottom: 16, width: 'calc(100% - 32px)', maxWidth: 448, zIndex: 20, boxShadow: '0 8px 24px rgba(0,0,0,.14)' }}>
           <b>이미 있는 분인가요?</b>
           <div className="muted" style={{ margin: '6px 0 10px' }}>
-            "{pending.input.name}" 이름의 기록이 있어요. 같은 분이면 고르고, 아니면 새로 추가하세요.
+            "{pending.input.name}" 이름의 기록이 있어요. 같은 분이면 고르세요.
           </div>
           {pending.candidates.map((c) => (
             <div key={c.id} className="list-item" {...rowButton(() => resolveWith(c.id))}>
@@ -386,7 +396,23 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
               <span className="muted">이 분이에요 ›</span>
             </div>
           ))}
-          <button className="ghost" style={{ width: '100%', marginTop: 10 }} onClick={resolveNew}>다른 사람으로 추가</button>
+          <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--line)' }}>
+            <div className="muted" style={{ marginBottom: 6 }}>
+              위에 없는 다른 분이면, 구분할 <b>메모</b>를 적어주세요.
+            </div>
+            <input
+              className="field"
+              placeholder="예) 회사 동료, 옆집 아저씨"
+              value={pendingMemo}
+              onChange={(e) => setPendingMemo(e.target.value)}
+            />
+            <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+              <button className="ghost" style={{ flex: 1 }} onClick={cancelPending}>취소</button>
+              <button className="primary" style={{ flex: 2 }} disabled={!pendingMemo.trim()} onClick={resolveNew}>
+                다른 사람으로 추가
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
