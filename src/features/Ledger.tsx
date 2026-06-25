@@ -5,6 +5,7 @@ import { TopBar } from '../ui/TopBar';
 import { rowButton } from '../ui/rowProps';
 import { personLedger } from '../domain/stats';
 import { formatKRW } from '../ui/format';
+import { AdBanner } from '../ui/AdBanner';
 
 export function Ledger({ nav, back, home }: { nav: Nav; back: () => void; home: () => void }) {
   const { persons, records } = useLedger();
@@ -72,6 +73,8 @@ export function Ledger({ nav, back, home }: { nav: Nav; back: () => void; home: 
             )}
           </div>
         )}
+
+        <AdBanner />
       </div>
     </>
   );

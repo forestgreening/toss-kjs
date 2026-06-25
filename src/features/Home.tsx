@@ -3,6 +3,7 @@ import { useLedger } from '../app/store';
 import { TopBar } from '../ui/TopBar';
 import { formatKRW, formatValue, formatDate } from '../ui/format';
 import { rowButton } from '../ui/rowProps';
+import { AdBanner } from '../ui/AdBanner';
 import { seedSample, isSeedActive, clearSeed } from '../data/seed';
 import type { Direction, LedgerRecord } from '../domain/models';
 
@@ -141,6 +142,8 @@ export function Home({ nav }: { nav: Nav }) {
             })
           )}
         </div>
+
+        <AdBanner />
       </div>
 
       <button className="primary fab" onClick={() => nav({ name: 'quick' })}>+ 기록 추가</button>
