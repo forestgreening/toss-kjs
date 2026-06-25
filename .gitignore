@@ -19,6 +19,11 @@ server/.data/
 
 # 디자인 소스(목업 zip 등) — 저장소에 미포함
 *.zip
+# 디자인 zip에서 추출된 중간 export(최종본은 assets/logo, assets/screenshots) — 미포함
+assets/a/
+assets/깃허브 프로젝트 디자인/
+# 스크린샷 캡처 중 잘못 생성된 OMC 상태 누수 방지
+assets/**/.omc/
 
 # OS / editor
 Thumbs.db
