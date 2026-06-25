@@ -284,7 +284,7 @@ export function QuickEntry({ nav, back, home, eventId }: { nav: Nav; back: () =>
                   style={{ marginTop: 8 }}
                   onClick={() => setAmount(String(hint.suggested))}
                 >
-                  지난번 받은 {formatKRW(hint.suggested)} 넣기
+                  지난번 {hint.displayName}님에게 {formatKRW(hint.suggested)} 받았어요
                 </button>
               )}
             </div>
