@@ -27,16 +27,27 @@ export async function probeContacts(): Promise<
     if (hasFn('openPermissionDialog')) {
       try { await callFn('openPermissionDialog', { name: 'contacts', access: 'read' }); } catch { /* 무시 */ }
     }
-    const res = await callFn<unknown>('fetchContacts');
-    const list = Array.isArray(res) ? res : (res as { result?: unknown[] })?.result ?? [];
-    const sample = Array.isArray(list) ? list.slice(0, 2) : list;
-    const count = Array.isArray(list) ? list.length : 'unknown';
+    // 실제 시그니처: fetchContacts({ size, offset }) → { result, nextOffset, done }
+    const res = await callFn<{ result?: unknown[]; nextOffset?: number | null; done?: boolean }>(
+      'fetchContacts',
+      { size: 50, offset: 0 },
+    );
+    const list = Array.isArray(res?.result) ? res.result : [];
+    const sample = list.slice(0, 2);
+    const count = list.length;
     return {
       result: { supported: true, scope: 'unknown' }, // 전체 vs 가입자만은 사람이 판단
-      raw: { count, sampleFields: Array.isArray(list) && list[0] ? Object.keys(list[0] as object) : [], sample },
+      raw: {
+        count,
+        nextOffset: res?.nextOffset ?? null,
+        done: res?.done ?? null,
+        sampleFields: list[0] ? Object.keys(list[0] as object) : [],
+        sample,
+      },
       humanCheck:
-        `반환 ${count}건. 기기 실제 연락처 수와 비교하라: ` +
-        `비슷하면 scope=full, 훨씬 적으면 scope=toss-only. decision 입력의 scope를 수동 수정.`,
+        `첫 페이지 ${count}건(size=50). 기기 실제 연락처 수와 비교하라: ` +
+        `비슷하면 scope=full, 훨씬 적으면 scope=toss-only. decision 입력의 scope를 수동 수정. ` +
+        `done=false면 nextOffset으로 더 가져올 수 있다.`,
     };
   } catch (e) {
     return {
@@ -134,9 +145,28 @@ export async function probeIdentity(): Promise<
   const diag: Record<string, unknown> = {};
 
   if (hasFn('getAnonymousKey')) {
-    try { anonymousKey = String(await callFn('getAnonymousKey')); } catch (e) { diag.anonError = String(e); }
+    try {
+      // 실제 반환: { type:'HASH', hash } | 'ERROR' | undefined(구버전)
+      const r = await callFn<unknown>('getAnonymousKey');
+      if (r && typeof r === 'object' && (r as { type?: string }).type === 'HASH') {
+        anonymousKey = (r as { hash: string }).hash;
+      } else {
+        diag.anonRaw = r; // 'ERROR' 또는 undefined(미지원 버전)
+      }
+    } catch (e) {
+      diag.anonError = String(e);
+    }
   } else {
     diag.anonNote = 'getAnonymousKey export 없음';
+  }
+
+  // 실행 환경(toss/sandbox) — 식별자 해석 보조
+  if (hasFn('getOperationalEnvironment')) {
+    try {
+      diag.operationalEnv = await callFn('getOperationalEnvironment');
+    } catch (e) {
+      diag.envError = String(e);
+    }
   }
 
   // 직전 실행 anonymousKey와 비교(같은 설치 내 안정성만 확인 가능)

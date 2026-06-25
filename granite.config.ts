@@ -9,9 +9,6 @@ export default defineConfig({
   // TODO(콘솔): 앱인토스 콘솔에서 발급/등록한 앱 ID로 교체. (`ait deploy` 대상 식별자)
   appName: 'maeumjangbu',
 
-  // 비게임 미니앱 — getAnonymousKey 사용 가능 조건(=type 'partner' / appType 'general').
-  appType: 'general',
-
   brand: {
     // 콘솔에 등록한 노출명과 동일해야 한다.
     displayName: '마음장부',
@@ -33,7 +30,7 @@ export default defineConfig({
     },
   },
 
-  // 'partner' = 일반 파트너 미니앱 프레임(비게임).
+  // 'partner' = 일반 파트너(비게임) 미니앱 프레임. getAnonymousKey 사용 가능 조건.
   webViewProps: { type: 'partner' },
 
   outdir: 'dist',

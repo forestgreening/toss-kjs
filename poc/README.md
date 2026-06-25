@@ -3,9 +3,9 @@
 코딩 본격화 전, 앱인토스 플랫폼의 **불확실한 4가지를 실측**하기 위한 일회용 측정 도구입니다.
 이 디렉토리는 메인 앱과 분리되어 있고(루트 tsc/테스트 대상 아님), **당신이 토스 샌드박스에서 직접 실행**합니다.
 
-> ⚠️ 이 하니스의 SDK 호출 코드는 이 저장소에서 실행/검증되지 않았습니다(토스 런타임 필요).
-> 방어적으로(feature-detect) 작성했으나, 설치된 SDK 버전에 맞춰 import·함수명·`granite.config.ts`를 조정해야 할 수 있습니다.
-> 반면 판정 로직 `src/poc/decision.ts`(evaluatePhase0)는 단위 테스트로 검증되어 있습니다.
+> ℹ️ probes·`granite.config.ts`는 설치된 `@apps-in-toss/web-framework` **2.9.3 타입에 맞춰 정렬**되어 있고
+> `tsc -p poc/tsconfig.json`로 타입체크됩니다(실제 토스 런타임 동작은 샌드박스에서 실측 필요).
+> SDK 버전이 바뀌면 import·함수명을 다시 맞추세요. 판정 로직 `src/poc/decision.ts`(evaluatePhase0)는 단위 테스트로 검증됨.
 
 ## 측정 항목 (Phase 0 결정표와 1:1)
 
